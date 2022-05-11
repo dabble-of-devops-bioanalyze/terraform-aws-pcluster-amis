@@ -1,0 +1,142 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+name: Scientific Stack
+description: |
+  Installs a scientific analysis stack.
+  RStudio, Lmod, EasyBuild, Spack, and VSCode
+
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: Fail
+        action: ExecuteBash
+        inputs:
+          commands:
+            - echo 1
+
+      - name: OperatingSystemRelease
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              FILE=/etc/os-release
+              if [ -e $FILE ]; then
+                . $FILE
+                echo "$ID${VERSION_ID:+.${VERSION_ID}}"
+              else
+                echo "The file $FILE does not exist. Failing build."
+                exit {{ build.Fail.outputs.stdout }}
+              fi
+
+      - name: InstallationRequirements
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+              # TODO
+              # Only supporting AWS Linux 2 based amis at this time
+
+              ################################################
+              # Install Miniconda
+              ################################################
+              # Import our GPG public key
+              echo "Installing miniconda"
+              sudo rpm --import https://repo.anaconda.com/pkgs/misc/gpgkeys/anaconda.asc
+              # Add the Anaconda repository
+              cat <<EOF > /etc/yum.repos.d/conda.repo
+              [conda]
+              name=Conda
+              baseurl=https://repo.anaconda.com/pkgs/misc/rpmrepo/conda
+              enabled=1
+              gpgcheck=1
+              gpgkey=https://repo.anaconda.com/pkgs/misc/gpgkeys/anaconda.asc
+              EOF
+
+              ################################################
+              # Install Packages
+              ################################################
+
+              # Install packages
+              echo "Installing system packages"
+              sudo amazon-linux-extras install -y epel
+              sudo yum-config-manager --enable epel
+              sudo yum update -y; yum upgrade -y
+              sudo yum group install -y 'Development Tools'
+              sudo yum install --quiet -y curl unzip wget git Lmod
+                sudo conda python3 pip3 amazon-efs-utils quota curl \
+                python3-devel npm nodejs s3fs-fuse \
+                R \
+                openssl openssl-devel \
+                vsftpd
+              curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
+              sudo yum install -y nodejs
+
+              ################################################
+              # Install EasyBuild
+              ################################################
+
+              echo "Installing python packages"
+              sudo pip3 install easybuild==4.5.4
+
+              ################################################
+              # Install Spack
+              ################################################
+
+              # Install latest spack release
+              export SPACK_ROOT=/opt/spack
+              mkdir -p ${SPACK_ROOT}
+              git clone https://github.com/spack/spack.git ${SPACK_ROOT}
+              cd ${SPACK_ROOT}
+              echo "export SPACK_ROOT=$SPACK_ROOT" > /etc/profile.d/spack.sh
+              echo "source $SPACK_ROOT/share/spack/setup-env.sh" >> /etc/profile.d/spack.sh
+              source ${SPACK_ROOT}/share/spack/setup-env.sh
+
+              ################################################
+              # Install RStudio
+              ################################################
+
+              echo "Installing RStudio"
+
+              # RStudio 2022.02.01
+              wget https://download2.rstudio.org/server/centos7/x86_64/rstudio-server-rhel-2022.02.1-461-x86_64.rpm
+              sudo yum install -y rstudio-server-rhel-2022.02.1-461-x86_64.rpm
+              rm -rf rstudio-server-rhel-2022.02.1-461-x86_64.rpm
+
+              sudo systemctl daemon-reload
+              sudo rstudio-server stop || echo "Unable to stop rstudio server"
+
+              ################################################
+              # Install Docker
+              ################################################
+              echo "Installing docker"
+              sudo amazon-linux-extras install -y docker
+              sudo service docker start
+              sudo groupmod -g 500 docker
+              sudo systemctl enable --now docker
+
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+
+              ################################################
+              # Install VSCode
+              ################################################
+
+              echo "Installing vscode"
+              sudo wget https://code-server.dev/install.sh
+              export HOME=/root
+              bash ./install.sh || echo "Unable to install vscode"

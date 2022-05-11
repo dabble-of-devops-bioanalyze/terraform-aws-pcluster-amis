@@ -1,0 +1,28 @@
+# https://aws.amazon.com/blogs/hpc/custom-amis-with-parallelcluster-3/
+name: Gromacs
+description: This is a sample component to show how to install spack and gromacs.
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: spackInstallation
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              set -v
+
+              # Install latest spack release
+              export SPACK_ROOT=/opt/spack
+              mkdir -p ${SPACK_ROOT}
+              git clone https://github.com/spack/spack.git ${SPACK_ROOT}
+              cd ${SPACK_ROOT}
+              echo "export SPACK_ROOT=$SPACK_ROOT" > /etc/profile.d/spack.sh
+              echo "source $SPACK_ROOT/share/spack/setup-env.sh" >> /etc/profile.d/spack.sh
+              source ${SPACK_ROOT}/share/spack/setup-env.sh
+
+              # Install some spack packages
+              spack install gromacs
+              spack install openfoam
+              spack install lampps

@@ -1,0 +1,33 @@
+"Build":
+  "Components":
+  - "Type": "arn"
+    "Value": "arn:aws:imagebuilder:us-east-1:aws:component/python-3-linux/1.0.1/1"
+  - "Type": "arn"
+    "Value": "arn:aws:imagebuilder:us-east-1:aws:component/amazon-cloudwatch-agent-linux/1.0.1/1"
+  - "Type": "arn"
+    "Value": "arn:aws:imagebuilder:us-east-1:aws:component/aws-cli-version-2-linux/1.0.3/1"
+  - "Type": "arn"
+    "Value": "arn:aws:imagebuilder:us-east-1:018835827632:component/bioanalyze-scientific-stack-component/1.0.0/1"
+  "InstanceType": "t3a.medium"
+  "ParentImage": "ami-0340a9f3d41a6c1f7"
+  "Tags":
+  - "Key": "Name"
+    "Value": "bioanalyze"
+  - "Key": "ParentAmiId"
+    "Value": "ami-0340a9f3d41a6c1f7"
+  - "Key": "ParentAmiName"
+    "Value": "Deep Learning AMI GPU PyTorch 1.10.0 Amazon Linux 2 20220403"
+"Image":
+  "Name": "BioAnalyze PCluster 3.1.2 Deep Learning AMI GPU PyTorch 1.10.0 Amazon Linux
+    2 20220403"
+  "Tags":
+  - "Key": "Name"
+    "Value": "BioAnalyze PCluster 3.1.2 Deep Learning AMI GPU PyTorch 1.10.0 Amazon
+      Linux 2 20220403"
+  - "Key": "Version"
+    "Value": "1.0"
+  - "Key": "ParentAmiID"
+    "Value": "ami-0340a9f3d41a6c1f7"
+  - "Key": "ParentAmiName"
+    "Value": "Deep Learning AMI GPU PyTorch 1.10.0 Amazon Linux 2 20220403"
+"Region": "us-east-1"

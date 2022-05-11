@@ -13,110 +13,47 @@ variable "region" {
   description = "AWS Region"
 }
 
+variable "subnet_id" {
+  type = string
+}
+
+variable "ami_id" {
+  type    = string
+  default = ""
+}
+
+variable "instance_type" {
+  type    = string
+  default = "t3a.medium"
+}
+
+variable "deep_learning_amis" {
+  description = "List of DeepLearning AMIs to build additional pcluster images."
+  default     = [
+    "Deep Learning AMI (Amazon Linux 2) Version 61.1",
+    "Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2) 20220403",
+    "Deep Learning AMI GPU TensorFlow 2.8.0 (Amazon Linux 2) 20220404",
+  ]
+}
+
+variable "image_recipe_version" {
+  type    = string
+  default = "1.0.0"
+}
+
+variable "ami_name" {
+  description = "Name to prepend to the created ami. Default is to use the context id."
+  default     = ""
+}
 ##################################################
-# AWS EKS - Kubernetes Cluster
-# Most of the time we will just pass in a provider
-##################################################
-
-variable "eks_cluster_id" {
-  description = "EKS Cluster Id - This cluster must exist."
-  type        = string
-}
-
-variable "eks_cluster_oidc_issuer_url" {
-  description = "URL to the oidc issuer. The cluster must have been created with :   oidc_provider_enabled = true"
-  type        = string
-}
-
-##################################################
-# Helm Release Variables
-# corresponds to input to resource "helm_release"
-##################################################
-
-# name             = var.airflow_release_name
-# repository       = "https://charts.bitnami.com/bitnami"
-# chart            = "airflow"
-# version          = "11.0.8"
-# namespace        = var.airflow_namespace
-# create_namespace = true
-# wait             = false
-# values = [file("helm_charts/airflow/values.yaml")]
-
-variable "helm_release_name" {
-  type        = string
-  description = "helm release name"
-}
-
-variable "helm_release_repository" {
-  type        = string
-  description = "helm release chart repository"
-}
-
-variable "helm_release_chart" {
-  type        = string
-  description = "helm release chart"
-}
-
-variable "helm_release_namespace" {
-  type        = string
-  description = "helm release namespace"
-  default     = "default"
-}
-
-variable "helm_release_version" {
-  type        = string
-  description = "helm release version"
-}
-
-variable "helm_release_wait" {
-  type    = bool
-  default = true
-}
-
-variable "helm_release_create_namespace" {
-  type    = bool
-  default = true
-}
-
-variable "helm_release_values_dir" {
-  type        = string
-  description = "Directory to put rendered values template files or additional keys. Should be helm_charts/{helm_release_name}"
-  default     = "helm_charts"
-}
-
-variable "helm_release_values_files" {
-  type        = list(string)
-  description = "helm release values files - paths values files to add to helm install --values {}"
-  default     = []
-}
-
-##################################################
-# Helm Release Variables - Enable SSL
-# corresponds to input to resource "helm_release"
+# Software Version Variables
 ##################################################
 
-variable "enable_ssl" {
-  description = "Enable SSL Support?"
-  type        = bool
-  default     = true
+
+variable "pcluster_version" {
+  default = "3.1.2"
 }
 
-# these variables are only needed if enable_ssl == true
-
-variable "letsencrypt_email" {
-  type        = string
-  description = "Email to use for https setup. Not needed unless enable_ssl"
-  default     = "hello@gmail.com"
-}
-
-variable "aws_route53_zone_name" {
-  type        = string
-  description = "Name of the zone to add records. Do not forget the trailing '.' - 'test.com.'"
-  default     = "test.com."
-}
-
-variable "aws_route53_record_name" {
-  type        = string
-  description = "Record name to add to aws_route_53. Must be a valid subdomain - www,app,etc"
-  default     = "www"
+variable "additional_components" {
+  default = []
 }

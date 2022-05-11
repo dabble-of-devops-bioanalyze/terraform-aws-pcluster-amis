@@ -1,1 +1,0 @@
-{{ cookiecutter.terraform_hcl }}
