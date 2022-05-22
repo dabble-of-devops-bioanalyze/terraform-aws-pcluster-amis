@@ -212,10 +212,10 @@ resource "null_resource" "pcluster_build_images" {
     null_resource.set_initial_state,
   ]
 
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = "while [[ $(cat current_state.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
-  }
+  #  provisioner "local-exec" {
+  #    interpreter = ["bash", "-c"]
+  #    command     = "while [[ $(cat current_state.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+  #  }
 
   provisioner "local-exec" {
     command = <<EOF
@@ -226,10 +226,10 @@ pcluster build-image \
 EOF
   }
 
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = "echo \"${count.index+1}\" > current_state.txt"
-  }
+  #  provisioner "local-exec" {
+  #    interpreter = ["bash", "-c"]
+  #    command     = "echo \"${count.index+1}\" > current_state.txt"
+  #  }
 }
 
 resource "null_resource" "pcluster_get_cloudformation_templates" {

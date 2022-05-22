@@ -30,7 +30,7 @@ variable "instance_type" {
 variable "deep_learning_amis" {
   description = "List of DeepLearning AMIs to build additional pcluster images."
   default     = [
-    "Deep Learning AMI (Amazon Linux 2) Version 61.1",
+    "Deep Learning AMI (Amazon Linux 2) Version 61*",
     "Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2) 20220403",
     "Deep Learning AMI GPU TensorFlow 2.8.0 (Amazon Linux 2) 20220404",
   ]
@@ -45,10 +45,10 @@ variable "ami_name" {
   description = "Name to prepend to the created ami. Default is to use the context id."
   default     = ""
 }
+
 ##################################################
 # Software Version Variables
 ##################################################
-
 
 variable "pcluster_version" {
   default = "3.1.2"
