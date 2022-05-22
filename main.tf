@@ -115,7 +115,7 @@ locals {
   ami_ids          = flatten(data.aws_ami.deeplearning[*].image_id)
   ami_names        = flatten(data.aws_ami.deeplearning[*].name)
   pcluster_ami_ids = flatten([
-  for i in range(length(local.ami_ids)) : trimspace("bioanalyze-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
+  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
   ])
   pcluster_ami_names = flatten([
   for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
@@ -162,6 +162,7 @@ locals {
     Build : {
       ParentImage : local.ami_ids[i],
       InstanceType : var.instance_type,
+      SubnetId : var.subnet_id,
       Components : [for component in local.components : { Type : "arn", Value : component }],
       Tags : flatten([
         [for key in keys(module.this.tags) : { Key : key, Value : module.this.tags[key] }], [
@@ -194,12 +195,28 @@ resource "local_file" "pcluster_build_configurations" {
   content    = yamlencode(local.pcluster_image_build_template[count.index])
 }
 
+# trick to wait on resources
+# https://stackoverflow.com/questions/63744524/sequential-resource-creation-in-terraform-with-count-or-for-each-possible
+resource "null_resource" "set_initial_state" {
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command     = "echo \"0\" > current_state.txt"
+  }
+}
+
 resource "null_resource" "pcluster_build_images" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
     null_resource.make_dirs,
     local_file.pcluster_build_configurations,
+    null_resource.set_initial_state,
   ]
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command     = "while [[ $(cat current_state.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
+  }
+
   provisioner "local-exec" {
     command = <<EOF
 pcluster build-image \
@@ -207,6 +224,11 @@ pcluster build-image \
   -r ${var.region} \
   -c ${local.pcluster_ami_build_config_files[count.index]}
 EOF
+  }
+
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+    command     = "echo \"${count.index+1}\" > current_state.txt"
   }
 }
 
