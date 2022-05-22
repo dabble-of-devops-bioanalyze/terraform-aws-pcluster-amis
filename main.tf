@@ -132,6 +132,10 @@ locals {
 }
 
 locals {
+  dt = formatdate("YYYYMMDD", timestamp())
+}
+
+locals {
   # TODO Sanity check
   # Tags must not have '(' or ')' in their values
   pcluster_image_build_template = [
@@ -147,7 +151,11 @@ locals {
         },
         {
           Key : "Version",
-          Value : "1.0"
+          Value : var.image_recipe_version,
+        },
+        {
+          Key : "Date",
+          Value : local.dt
         },
         {
           Key : "ParentAmiID",
@@ -209,6 +217,7 @@ resource "null_resource" "pcluster_build_images" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
     null_resource.make_dirs,
+    aws_imagebuilder_component.scientific_stack,
     local_file.pcluster_build_configurations,
     null_resource.set_initial_state,
   ]
@@ -231,6 +240,16 @@ EOF
   #    interpreter = ["bash", "-c"]
   #    command     = "echo \"${count.index+1}\" > current_state.txt"
   #  }
+}
+
+output "pcluster_create_command" {
+  count = length(local.pcluster_image_build_template)
+  value = <<EOF
+pcluster build-image \
+  --image-id ${local.pcluster_ami_ids[count.index]} \
+  -r ${var.region} \
+  -c ${local.pcluster_ami_build_config_files[count.index]}
+EOF
 }
 
 resource "null_resource" "pcluster_get_cloudformation_templates" {
