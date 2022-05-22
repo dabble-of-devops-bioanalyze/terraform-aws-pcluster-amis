@@ -163,6 +163,7 @@ locals {
       ParentImage : local.ami_ids[i],
       InstanceType : var.instance_type,
       SubnetId : var.subnet_id,
+      SecurityGroupIds : var.security_group_ids,
       Components : [for component in local.components : { Type : "arn", Value : component }],
       Tags : flatten([
         [for key in keys(module.this.tags) : { Key : key, Value : module.this.tags[key] }], [

@@ -17,6 +17,11 @@ variable "subnet_id" {
   type = string
 }
 
+variable "security_group_ids" {
+  type    = list(string)
+  default = []
+}
+
 variable "ami_id" {
   type    = string
   default = ""
