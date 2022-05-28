@@ -127,6 +127,7 @@ locals {
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
   ])
   pcluster_ami_build_cloudformation_status_files = flatten([
+  for i in range(length(local.ami_ids)) : "files/cloudformation-pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
   ])
 
 }
@@ -184,16 +185,36 @@ locals {
   ]
 }
 
+locals {
+  make_dirs_command = flatten([
+  for i in range(length(local.pcluster_image_build_template)) :
+  <<EOF
+mkdir -p files/pcluster-v${var.pcluster_version}
+touch ${local.pcluster_ami_build_config_files[i]}
+touch ${local.pcluster_ami_build_cloudformation_template_files[i]}
+EOF
+  ])
+  pcluster_build_command = flatten([
+  for i in range(length(local.pcluster_image_build_template)) :
+  <<EOF
+pcluster build-image \
+  --image-id ${local.pcluster_ami_ids[i]} \
+  -r ${var.region} \
+  -c ${local.pcluster_ami_build_config_files[i]}
+EOF
+  ])
+}
+
+output "pcluster_build_command" {
+  value = local.pcluster_build_command
+}
+
 resource "null_resource" "make_dirs" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
   ]
   provisioner "local-exec" {
-    command = <<EOF
-mkdir -p files/pcluster-v${var.pcluster_version}
-touch ${local.pcluster_ami_build_config_files[count.index]}
-touch ${local.pcluster_ami_build_cloudformation_template_files[count.index]}
-EOF
+    command = local.make_dirs_command[count.index]
   }
 }
 
@@ -204,53 +225,19 @@ resource "local_file" "pcluster_build_configurations" {
   content    = yamlencode(local.pcluster_image_build_template[count.index])
 }
 
-# trick to wait on resources
-# https://stackoverflow.com/questions/63744524/sequential-resource-creation-in-terraform-with-count-or-for-each-possible
-resource "null_resource" "set_initial_state" {
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = "echo \"0\" > current_state.txt"
-  }
-}
-
 resource "null_resource" "pcluster_build_images" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
     null_resource.make_dirs,
     aws_imagebuilder_component.scientific_stack,
     local_file.pcluster_build_configurations,
-    null_resource.set_initial_state,
   ]
 
-  #  provisioner "local-exec" {
-  #    interpreter = ["bash", "-c"]
-  #    command     = "while [[ $(cat current_state.txt) != \"${count.index}\" ]]; do echo \"${count.index} is waiting...\";sleep 5;done"
-  #  }
-
   provisioner "local-exec" {
-    command = <<EOF
-pcluster build-image \
-  --image-id ${local.pcluster_ami_ids[count.index]} \
-  -r ${var.region} \
-  -c ${local.pcluster_ami_build_config_files[count.index]}
-EOF
+    command = local.pcluster_build_command[count.index]
   }
-
-  #  provisioner "local-exec" {
-  #    interpreter = ["bash", "-c"]
-  #    command     = "echo \"${count.index+1}\" > current_state.txt"
-  #  }
 }
 
-output "pcluster_create_command" {
-  count = length(local.pcluster_image_build_template)
-  value = <<EOF
-pcluster build-image \
-  --image-id ${local.pcluster_ami_ids[count.index]} \
-  -r ${var.region} \
-  -c ${local.pcluster_ami_build_config_files[count.index]}
-EOF
-}
 
 resource "null_resource" "pcluster_get_cloudformation_templates" {
   count      = length(local.pcluster_image_build_template)
@@ -278,6 +265,24 @@ data "local_file" "pcluster_stacks" {
   filename = local.pcluster_ami_build_cloudformation_template_files[count.index]
 }
 
+# TODO Write a python script to run sanity checks for images and stacks
+resource "null_resource" "pcluster_get_cloudformation_statuses" {
+  count      = length(local.pcluster_image_build_template)
+  depends_on = [
+    null_resource.make_dirs,
+    null_resource.pcluster_build_images,
+    local_file.pcluster_build_configurations,
+  ]
+  provisioner "local-exec" {
+    command = <<EOF
+# pcluster deletes the stack
+# so once this operation is done it will fail with a message about expecting output
+aws cloudformation describe-stacks \
+      --stack-name ${local.pcluster_ami_ids[count.index]} >  ${local.pcluster_ami_build_cloudformation_status_files[count.index]}  || echo "Unable to get cloudformation stack data"
+EOF
+  }
+}
+
 resource "null_resource" "pcluster_wait" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
@@ -289,32 +294,13 @@ resource "null_resource" "pcluster_wait" {
     command = <<EOF
 # pcluster deletes the stack
 # so once this operation is done it will fail with a message about expecting output
-for i in {1..5}; do aws cloudformation wait stack-create-complete --stack-name ${local.pcluster_ami_ids[count.index]} && break || sleep 5m; done
+for i in {1..20}; do aws cloudformation wait stack-create-complete --stack-name ${local.pcluster_ami_ids[count.index]} ; break || sleep 5m; done
 EOF
   }
 }
 
 output "pcluster_cloudformation_status_files" {
   value = local.pcluster_ami_build_cloudformation_status_files
-}
-
-# TODO Write a python script to run sanity checks for images and stacks
-resource "null_resource" "pcluster_get_cloudformation_statuses" {
-  count      = length(local.pcluster_image_build_template)
-  depends_on = [
-    null_resource.make_dirs,
-    null_resource.pcluster_build_images,
-    local_file.pcluster_build_configurations,
-    null_resource.pcluster_wait,
-  ]
-  provisioner "local-exec" {
-    command = <<EOF
-# pcluster deletes the stack
-# so once this operation is done it will fail with a message about expecting output
-aws cloudformation describe-stacks \
-      --stack-name ${local.pcluster_ami_ids[count.index]} >  ${local.pcluster_ami_build_cloudformation_status_files[count.index]}  || echo "Unable to get cloudformation stack data"
-EOF
-  }
 }
 
 resource "null_resource" "pcluster_image_creation_sanity_check" {
@@ -339,7 +325,8 @@ data "aws_ami" "pcluster_build_image_amis" {
   depends_on = [
     null_resource.pcluster_wait,
     null_resource.pcluster_build_images,
-    null_resource.pcluster_get_cloudformation_statuses
+    null_resource.pcluster_get_cloudformation_statuses,
+    null_resource.pcluster_image_creation_sanity_check,
   ]
   most_recent = true
   owners      = ["self"]

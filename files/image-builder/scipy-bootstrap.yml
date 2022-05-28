@@ -79,18 +79,24 @@ phases:
               sudo yum group install -y 'Development Tools'
               sudo yum install --quiet -y curl unzip wget git Lmod
                 sudo conda python3 pip3 amazon-efs-utils quota curl \
+                perl-devel perl-threads \
                 python3-devel npm nodejs s3fs-fuse \
+                zsh gitflow \
                 R \
                 openssl openssl-devel \
                 vsftpd
               curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
               sudo yum install -y nodejs
+              sudo npm install -g configurable-http-proxy
+              # nextflow needs java >= 11
+              sudo amazon-linux-extras install -y java-openjdk11
 
               ################################################
               # Install EasyBuild
               ################################################
 
               echo "Installing python packages"
+              # TODO This doesn't work because the current python version is not compatible with easybuild
               sudo pip3 install easybuild==4.5.4
 
               ################################################
