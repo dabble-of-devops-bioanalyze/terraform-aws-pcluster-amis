@@ -32,12 +32,13 @@ variable "instance_type" {
   default = "t3a.medium"
 }
 
+#TODO change this to map of name/value
 variable "deep_learning_amis" {
   description = "List of DeepLearning AMIs to build additional pcluster images."
   default     = [
-    "Deep Learning AMI (Amazon Linux 2) Version 61*",
-    "Deep Learning AMI GPU PyTorch 1.10.0 (Amazon Linux 2) 20220403",
-    "Deep Learning AMI GPU TensorFlow 2.8.0 (Amazon Linux 2) 20220404",
+    "Deep Learning AMI (Amazon Linux 2) Version 6*",
+    "Deep Learning AMI GPU PyTorch 1* (Amazon Linux 2)*",
+    "Deep Learning AMI GPU TensorFlow 2* (Amazon Linux 2)*",
   ]
 }
 
