@@ -1,4 +1,10 @@
 locals {
+  dt      = formatdate("YYYYMMDD", timestamp())
+  dt_day  = formatdate("YYYYMMDD", timestamp())
+  dt_time = formatdate("YYYYMMDD-hh-mm-ss", timestamp())
+}
+
+locals {
   ami_name = var.ami_name != "" ? var.ami_name : title(join(" ", split("-", module.this.id, )))
 }
 
@@ -75,9 +81,17 @@ locals {
   scientific_stack = yamldecode(data.local_file.scientific_stack.content)
 }
 
+locals {
+  scientific_stack_yaml = yamlencode(local.scientific_stack)
+}
+
 resource "aws_imagebuilder_component" "scientific_stack" {
-  name     = "${module.this.id}-scientific-stack-component"
+  name       = "${module.this.id}-scientific-stack-component-${formatdate("YYYYMMDDhhmmZZZ", timestamp())}"
+  depends_on = [
+    data.local_file.scientific_stack
+  ]
   platform = "Linux"
+  // Version must be in format: major.minor.patch
   version  = "1.0.0"
   data     = data.local_file.scientific_stack.content
   tags     = module.this.tags
@@ -86,18 +100,6 @@ resource "aws_imagebuilder_component" "scientific_stack" {
 output "scientific_stack" {
   value = aws_imagebuilder_component.scientific_stack
 }
-
-#resource "aws_imagebuilder_component" "gromacs" {
-#  name     = "${module.this.id}-gromacs-component"
-#  platform = "Linux"
-#  version  = "1.0.0"
-#  data     = data.local_file.gromacs.content
-#  tags     = module.this.tags
-#}
-#
-#output "gromacs_component" {
-#  value = aws_imagebuilder_component.gromacs
-#}
 
 
 locals {
@@ -115,10 +117,12 @@ locals {
   ami_ids          = flatten(data.aws_ami.deeplearning[*].image_id)
   ami_names        = flatten(data.aws_ami.deeplearning[*].name)
   pcluster_ami_ids = flatten([
-  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
+  # the ami id already gets the date time attached
+  # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
+  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
   ])
   pcluster_ami_names = flatten([
-  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
+  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} ${local.dt} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
   ])
   pcluster_ami_build_config_files = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster_build-${local.pcluster_ami_ids[i]}.yaml"
@@ -132,9 +136,6 @@ locals {
 
 }
 
-locals {
-  dt = formatdate("YYYYMMDD", timestamp())
-}
 
 locals {
   # TODO Sanity check
@@ -205,6 +206,16 @@ EOF
   ])
 }
 
+locals {
+  triggers = {
+    pcluster_build_templates = join(",", [for i in local.pcluster_image_build_template :  yamlencode(i)])
+    pcluster_ami_ids         = join(",", local.pcluster_ami_ids),
+    deeplearning_amis        = join(",", data.aws_ami.deeplearning.*.id)
+    config_files             = join(",", local.pcluster_ami_build_config_files)
+    make_dirs_command        = join(",", local.make_dirs_command)
+  }
+}
+
 output "pcluster_build_command" {
   value = local.pcluster_build_command
 }
@@ -213,6 +224,7 @@ resource "null_resource" "make_dirs" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
   ]
+  triggers = local.triggers
   provisioner "local-exec" {
     command = local.make_dirs_command[count.index]
   }
@@ -227,7 +239,9 @@ resource "local_file" "pcluster_build_configurations" {
 
 resource "null_resource" "pcluster_build_images" {
   count      = length(local.pcluster_image_build_template)
+  triggers   = local.triggers
   depends_on = [
+    data.aws_ami.deeplearning,
     null_resource.make_dirs,
     aws_imagebuilder_component.scientific_stack,
     local_file.pcluster_build_configurations,
@@ -246,6 +260,7 @@ resource "null_resource" "pcluster_get_cloudformation_templates" {
     null_resource.pcluster_build_images,
     local_file.pcluster_build_configurations,
   ]
+  triggers = local.triggers
   provisioner "local-exec" {
     command = <<EOF
   sleep 60
@@ -259,6 +274,9 @@ EOF
 
 data "local_file" "pcluster_stacks" {
   depends_on = [
+    null_resource.make_dirs,
+    null_resource.pcluster_build_images,
+    local_file.pcluster_build_configurations,
     null_resource.pcluster_get_cloudformation_templates
   ]
   count    = length(local.pcluster_image_build_template)
@@ -271,8 +289,10 @@ resource "null_resource" "pcluster_get_cloudformation_statuses" {
   depends_on = [
     null_resource.make_dirs,
     null_resource.pcluster_build_images,
+    null_resource.pcluster_get_cloudformation_templates,
     local_file.pcluster_build_configurations,
   ]
+  triggers = local.triggers
   provisioner "local-exec" {
     command = <<EOF
 # pcluster deletes the stack
@@ -285,9 +305,11 @@ EOF
 
 resource "null_resource" "pcluster_wait" {
   count      = length(local.pcluster_image_build_template)
+  triggers   = local.triggers
   depends_on = [
     null_resource.make_dirs,
     null_resource.pcluster_build_images,
+    null_resource.pcluster_get_cloudformation_templates,
     local_file.pcluster_build_configurations,
   ]
   provisioner "local-exec" {
@@ -305,6 +327,7 @@ output "pcluster_cloudformation_status_files" {
 
 resource "null_resource" "pcluster_image_creation_sanity_check" {
   count      = length(local.pcluster_image_build_template)
+  triggers   = local.triggers
   depends_on = [
     null_resource.make_dirs,
     local_file.pcluster_build_configurations,
@@ -323,6 +346,10 @@ EOF
 data "aws_ami" "pcluster_build_image_amis" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
+    local_file.pcluster_build_configurations,
+    data.local_file.pcluster_stacks,
+    data.local_file.scientific_stack,
+    aws_imagebuilder_component.scientific_stack,
     null_resource.pcluster_wait,
     null_resource.pcluster_build_images,
     null_resource.pcluster_get_cloudformation_statuses,

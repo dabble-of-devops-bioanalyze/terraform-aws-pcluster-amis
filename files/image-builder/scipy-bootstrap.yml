@@ -77,27 +77,71 @@ phases:
               sudo yum-config-manager --enable epel
               sudo yum update -y; yum upgrade -y
               sudo yum group install -y 'Development Tools'
-              sudo yum install --quiet -y curl unzip wget git Lmod
+              sudo yum install --quiet -y curl unzip wget git gitflow zsh \
+                Lmod \
                 sudo conda python3 pip3 amazon-efs-utils quota curl \
+                htop atop  \
                 perl-devel perl-threads \
-                python3-devel npm nodejs s3fs-fuse \
-                zsh gitflow \
-                R \
+                golang \
+                python3-devel s3fs-fuse \
                 openssl openssl-devel \
-                vsftpd
+                vsftpd \
+                libuuid-devel \
+                libseccomp-devel \
+                squashfs-tools \
+                singularity-runtime singularity
+
               curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
-              sudo yum install -y nodejs
-              sudo npm install -g configurable-http-proxy
+              sudo yum install -y nodejs npm
+              sudo npm install -g configurable-http-proxy vtop
               # nextflow needs java >= 11
-              sudo amazon-linux-extras install -y java-openjdk11
+              sudo amazon-linux-extras install -y java-openjdk11 R4
+
+              ################################################
+              # Install Desktops
+              # Desktops for DCV and Gnome
+              ################################################
+              sudo yum -y groups install "GNOME Desktop"
+
+              ################################################
+              # Install YQ
+              ################################################
+              yum -y groups install "GNOME Desktop"
+
+              ################################################
+              # Install YQ
+              ################################################
+
+              if [[ $(uname -m) == "aarch64" ]];then
+                 wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_arm64
+              else
+                 wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64
+              fi
 
               ################################################
               # Install EasyBuild
               ################################################
 
               echo "Installing python packages"
-              # TODO This doesn't work because the current python version is not compatible with easybuild
-              sudo pip3 install easybuild==4.5.4
+              sudo pip3 install sphinx boto3
+
+              # we need to use miniconda to install easybuild. it doesn't play well with all pythons
+              source /opt/conda/etc/profile.d/conda.sh || echo 'Unable to source conda'
+              sudo /opt/conda/condabin/conda clean -y -a || echo 'Unable to clean conda'
+              sudo mkdir -p /opt/conda/pkgs/ || echo 'Unable to create conda pkg dir'
+              sudo touch /opt/conda/pkgs/urls.txt || echo 'Unable to create url file'
+              sudo chown -R ec2-user:ec2-user /opt/conda/pkgs/ || echo 'Unable to chown packages'
+              conda env create -n easybuild python=3.6 pip || echo 'Unable to create easybuild python'
+              source activate easybuild && pip install easybuild==4.5.4 || echo 'Unable to activate easybuild'
+
+              ################################################
+              # Install Prometheus Slurm Exporter
+              ################################################
+
+              cd /tmp
+              git clone https://github.com/vpenso/prometheus-slurm-exporter.git
+              cd prometheus-slurm-exporter
+              sudo make
 
               ################################################
               # Install Spack

@@ -10,3 +10,28 @@ lint:
 	$(SELF) terraform/install terraform/get-modules terraform/get-plugins terraform/lint terraform/validate
 	# Make sure we don't have any root!
 	grep -nri source * |grep = | grep root && echo "Found root module. Abort"; exit 1
+
+download-readme:
+	wget https://raw.githubusercontent.com/dabble-of-devops-bioanalyze/biohub-info/master/docs/README.md.gotmpl -O ./README.md.gotmpl
+
+docker-run:
+	$(MAKE) download-readme
+	docker run -it -v "$(shell pwd):/tmp/terraform-module" \
+		-e README_TEMPLATE_FILE=/tmp/terraform-module/README.md.gotmpl \
+		-w /tmp/terraform-module \
+		--entrypoint bash  \
+		cloudposse/build-harness:slim-latest bash
+
+custom-init:
+	docker run -it -v "$(shell pwd):/tmp/terraform-module" \
+		-e README_TEMPLATE_FILE=/tmp/terraform-module/README.md.gotmpl \
+		-w /tmp/terraform-module \
+		cloudposse/build-harness:slim-latest init
+
+custom-readme:
+	$(MAKE) download-readme
+	$(MAKE) custom-init
+	docker run -it -v "$(shell pwd):/tmp/terraform-module" \
+		-e README_TEMPLATE_FILE=/tmp/terraform-module/README.md.gotmpl \
+		-w /tmp/terraform-module \
+		cloudposse/build-harness:slim-latest readme
