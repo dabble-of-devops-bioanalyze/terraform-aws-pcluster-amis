@@ -135,10 +135,12 @@ locals {
   pcluster_ami_ids = flatten([
   # the ami id already gets the date time attached
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
-  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${random_string.amis[i].id}-${local.dt_day}")
+  # make sure we are using a name pattern that is allowed
+  # The 'Name' tag has the full name
+  for i in range(length(local.ami_ids)) : trimspace("${random_string.amis[i].id}-${local.dt_day}")
   ])
   pcluster_ami_names = flatten([
-  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} ${local.dt} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
+  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
   ])
   pcluster_ami_build_config_files = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster_build-${local.pcluster_ami_ids[i]}.yaml"
@@ -345,6 +347,23 @@ EOF
 
 output "pcluster_cloudformation_status_files" {
   value = local.pcluster_ami_build_cloudformation_status_files
+}
+
+resource "null_resource" "pcluster_image_creation_check" {
+  count      = length(local.pcluster_image_build_template)
+  triggers   = local.triggers
+  depends_on = [
+    null_resource.make_dirs,
+    local_file.pcluster_build_configurations,
+    null_resource.pcluster_build_images,
+    null_resource.pcluster_wait,
+  ]
+  provisioner "local-exec" {
+    command = <<EOF
+pcluster describe-image \
+  --image-id ${local.pcluster_ami_ids[count.index]}
+EOF
+  }
 }
 
 resource "null_resource" "pcluster_image_creation_sanity_check" {
