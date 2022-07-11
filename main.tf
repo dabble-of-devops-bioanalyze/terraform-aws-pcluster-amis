@@ -214,6 +214,12 @@ EOF
   pcluster_build_command = flatten([
   for i in range(length(local.pcluster_image_build_template)) :
   <<EOF
+echo "${local.pcluster_ami_names[i]}"
+
+pcluster delete-image \
+  --image-id ${local.pcluster_ami_ids[i]} \
+  -r ${var.region} || echo "Image does not exist"
+
 pcluster build-image \
   --image-id ${local.pcluster_ami_ids[i]} \
   -r ${var.region} \
