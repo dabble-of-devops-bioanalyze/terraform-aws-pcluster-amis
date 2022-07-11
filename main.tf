@@ -113,13 +113,27 @@ locals {
   pcluster_build_config_dir = "files/pcluster-v${var.pcluster_version}"
 }
 
+resource "random_string" "amis" {
+  count   = length(data.aws_ami.deeplearning)
+  length  = 10
+  special = false
+  upper   = false
+  lower   = true
+}
+
 locals {
   ami_ids          = flatten(data.aws_ami.deeplearning[*].image_id)
   ami_names        = flatten(data.aws_ami.deeplearning[*].name)
+  #  pcluster_ami_ids = flatten([
+  #  # the ami id already gets the date time attached
+  #  # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
+  #  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
+  #  ])
+  # keep running into issues where this is too long
   pcluster_ami_ids = flatten([
   # the ami id already gets the date time attached
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
-  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
+  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${random_string.amis[i]}-${local.dt_day}")
   ])
   pcluster_ami_names = flatten([
   for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} ${local.dt} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
@@ -145,7 +159,7 @@ locals {
   {
     Region : var.region,
     Image : {
-      Name : local.pcluster_ami_names[i]
+      Name : local.pcluster_ami_ids[i]
       Tags : [
         {
           Key : "Name",
