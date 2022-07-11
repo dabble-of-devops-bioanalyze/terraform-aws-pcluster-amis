@@ -135,7 +135,7 @@ locals {
   pcluster_ami_ids = flatten([
   # the ami id already gets the date time attached
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
-  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${random_string.amis[i]}-${local.dt_day}")
+  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${random_string.amis[i].id}-${local.dt_day}")
   ])
   pcluster_ami_names = flatten([
   for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} ${local.dt} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
