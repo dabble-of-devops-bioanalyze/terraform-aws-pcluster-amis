@@ -12,6 +12,7 @@ output "ami_name" {
   value = local.ami_name
 }
 
+
 data "aws_ami" "pcluster" {
   most_recent = true
   owners      = ["247102896272"]
@@ -86,13 +87,14 @@ locals {
 }
 
 resource "aws_imagebuilder_component" "scientific_stack" {
-  name       = "${module.this.id}-scientific-stack-component-${formatdate("YYYYMMDDhhmmZZZ", timestamp())}"
+  name       = "${module.this.id}-scientific-stack-component-${formatdate("YYYYMMDDhhmmss", timestamp())}"
   depends_on = [
     data.local_file.scientific_stack
   ]
   platform = "Linux"
   // Version must be in format: major.minor.patch
-  version  = "1.0.0"
+#  version  = "1.0.0"
+  version = formatdate("YYYY.MM.DDhhmmss", timestamp())}
   data     = data.local_file.scientific_stack.content
   tags     = module.this.tags
 }
