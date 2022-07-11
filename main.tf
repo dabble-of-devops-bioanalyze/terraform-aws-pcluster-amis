@@ -93,8 +93,8 @@ resource "aws_imagebuilder_component" "scientific_stack" {
   ]
   platform = "Linux"
   // Version must be in format: major.minor.patch
-#  version  = "1.0.0"
-  version = formatdate("YYYY.MM.DDhhmmss", timestamp())}
+  #  version  = "1.0.0"
+  version  = formatdate("YYYY.MM.DDhhmmss", timestamp())
   data     = data.local_file.scientific_stack.content
   tags     = module.this.tags
 }
