@@ -1,4 +1,3 @@
-locals {
   dt      = formatdate("YYYYMMDD", timestamp())
   dt_day  = formatdate("YYYYMMDD", timestamp())
   dt_time = formatdate("YYYYMMDD-hh-mm-ss", timestamp())
@@ -236,11 +235,11 @@ EOF
 
 locals {
   triggers = {
-    pcluster_build_templates = join(",", [for i in local.pcluster_image_build_template :  yamlencode(i)])
-    pcluster_ami_ids         = join(",", local.pcluster_ami_ids),
-    deeplearning_amis        = join(",", data.aws_ami.deeplearning.*.id)
-    config_files             = join(",", local.pcluster_ami_build_config_files)
-    make_dirs_command        = join(",", local.make_dirs_command)
+#    pcluster_build_templates = join(",", [for i in local.pcluster_image_build_template :  yamlencode(i)])
+#    pcluster_ami_ids         = join(",", local.pcluster_ami_ids),
+#    deeplearning_amis        = join(",", data.aws_ami.deeplearning.*.id)
+#    config_files             = join(",", local.pcluster_ami_build_config_files)
+#    make_dirs_command        = join(",", local.make_dirs_command)
   }
 }
 
