@@ -124,13 +124,13 @@ resource "random_string" "amis" {
 }
 
 locals {
-  ami_ids          = flatten(data.aws_ami.deeplearning[*].image_id)
-  ami_names        = flatten(data.aws_ami.deeplearning[*].name)
-  #  pcluster_ami_ids = flatten([
-  #  # the ami id already gets the date time attached
-  #  # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
-  #  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
-  #  ])
+  ami_ids               = flatten(data.aws_ami.deeplearning[*].image_id)
+  ami_names             = flatten(data.aws_ami.deeplearning[*].name)
+  pcluster_ami_long_ids = flatten([
+  # the ami id already gets the date time attached
+  # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
+  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
+  ])
   # keep running into issues where this is too long
   pcluster_ami_ids = flatten([
   # the ami id already gets the date time attached
@@ -150,6 +150,9 @@ locals {
   ])
   pcluster_ami_build_cloudformation_status_files = flatten([
   for i in range(length(local.ami_ids)) : "files/cloudformation-pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
+  ])
+  pcluster_ami_build_pcluster_describe_files = flatten([
+  for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster-ami-${local.pcluster_ami_ids[i]}.json"
   ])
 
 }
@@ -211,6 +214,7 @@ locals {
 mkdir -p files/pcluster-v${var.pcluster_version}
 touch ${local.pcluster_ami_build_config_files[i]}
 touch ${local.pcluster_ami_build_cloudformation_template_files[i]}
+touch ${local.pcluster_ami_build_pcluster_describe_files[i]}
 EOF
   ])
   pcluster_build_command = flatten([
@@ -307,6 +311,7 @@ data "local_file" "pcluster_stacks" {
   filename = local.pcluster_ami_build_cloudformation_template_files[count.index]
 }
 
+
 # TODO Write a python script to run sanity checks for images and stacks
 resource "null_resource" "pcluster_get_cloudformation_statuses" {
   count      = length(local.pcluster_image_build_template)
@@ -361,9 +366,29 @@ resource "null_resource" "pcluster_image_creation_check" {
   provisioner "local-exec" {
     command = <<EOF
 pcluster describe-image \
-  --image-id ${local.pcluster_ami_ids[count.index]}
+  --image-id ${local.pcluster_ami_ids[count.index]} > ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
 EOF
   }
+}
+
+data "local_file" "pcluster_amis" {
+  depends_on = [
+    null_resource.make_dirs,
+    null_resource.pcluster_build_images,
+    local_file.pcluster_build_configurations,
+    null_resource.pcluster_get_cloudformation_templates,
+    null_resource.pcluster_image_creation_check,
+  ]
+  count    = length(local.pcluster_image_build_template)
+  filename = local.pcluster_ami_build_pcluster_describe_files[count.index]
+}
+
+locals {
+  pcluster_amis = [for pcluster_ami in data.local_file.pcluster_stacks : jsondecode(pcluster_ami.content)]
+}
+
+output "pcluster_build_image_amis" {
+  value = local.pcluster_amis
 }
 
 resource "null_resource" "pcluster_image_creation_sanity_check" {
@@ -383,29 +408,30 @@ pcluster describe-image \
 EOF
   }
 }
-
-data "aws_ami" "pcluster_build_image_amis" {
-  count      = length(local.pcluster_image_build_template)
-  depends_on = [
-    local_file.pcluster_build_configurations,
-    data.local_file.pcluster_stacks,
-    data.local_file.scientific_stack,
-    aws_imagebuilder_component.scientific_stack,
-    null_resource.pcluster_wait,
-    null_resource.pcluster_build_images,
-    null_resource.pcluster_get_cloudformation_statuses,
-    null_resource.pcluster_image_creation_sanity_check,
-  ]
-  most_recent = true
-  owners      = ["self"]
-
-  filter {
-    name   = "name"
-    values = [
-      "${local.pcluster_ami_names[count.index]}*",
-    ]
-  }
-}
+#
+#data "aws_ami" "pcluster_build_image_amis" {
+#  count      = length(local.pcluster_image_build_template)
+#  depends_on = [
+#    local_file.pcluster_build_configurations,
+#    data.local_file.pcluster_stacks,
+#    data.local_file.scientific_stack,
+#    aws_imagebuilder_component.scientific_stack,
+#    null_resource.pcluster_wait,
+#    null_resource.pcluster_build_images,
+#    null_resource.pcluster_get_cloudformation_statuses,
+#    null_resource.pcluster_image_creation_sanity_check,
+#  ]
+#  most_recent = true
+#  owners      = ["self"]
+#
+#  filter {
+#    name   = "name"
+#    values = [
+#      "${local.pcluster_ami_names[count.index]}*",
+#    ]
+#  }
+#}
+#
 
 output "pcluster_ami_ids" {
   value = local.pcluster_ami_ids
@@ -415,6 +441,6 @@ output "pcluster_ami_names" {
   value = local.pcluster_ami_names
 }
 
-output "pcluster_build_image_amis" {
-  value = data.aws_ami.pcluster_build_image_amis
-}
+#output "pcluster_build_image_amis" {
+#  value = data.aws_ami.pcluster_build_image_amis
+#}
