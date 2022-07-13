@@ -1,3 +1,4 @@
+locals {
   dt      = formatdate("YYYYMMDD", timestamp())
   dt_day  = formatdate("YYYYMMDD", timestamp())
   dt_time = formatdate("YYYYMMDD-hh-mm-ss", timestamp())
@@ -93,7 +94,7 @@ resource "aws_imagebuilder_component" "scientific_stack" {
   platform = "Linux"
   // Version must be in format: major.minor.patch
   #  version  = "1.0.0"
-  version  = formatdate("YYYY.MM.DDhhmmss", timestamp())
+  version  = formatdate("YYYY.MM.DD", timestamp())
   data     = data.local_file.scientific_stack.content
   tags     = module.this.tags
 }
@@ -116,7 +117,7 @@ locals {
 
 resource "random_string" "amis" {
   count   = length(data.aws_ami.deeplearning)
-  length  = 10
+  length  = 6
   special = false
   upper   = false
   lower   = true
@@ -136,7 +137,7 @@ locals {
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
   # make sure we are using a name pattern that is allowed
   # The 'Name' tag has the full name
-  for i in range(length(local.ami_ids)) : trimspace("${random_string.amis[i].id}-${local.dt_day}")
+  for i in range(length(local.ami_ids)) : trimspace("pcluster-${replace(var.pcluster_version, ".", "-")}-${random_string.amis[i].id}-${local.dt_day}")
   ])
   pcluster_ami_names = flatten([
   for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
@@ -235,11 +236,11 @@ EOF
 
 locals {
   triggers = {
-#    pcluster_build_templates = join(",", [for i in local.pcluster_image_build_template :  yamlencode(i)])
-#    pcluster_ami_ids         = join(",", local.pcluster_ami_ids),
-#    deeplearning_amis        = join(",", data.aws_ami.deeplearning.*.id)
-#    config_files             = join(",", local.pcluster_ami_build_config_files)
-#    make_dirs_command        = join(",", local.make_dirs_command)
+    #    pcluster_build_templates = join(",", [for i in local.pcluster_image_build_template :  yamlencode(i)])
+    #    pcluster_ami_ids         = join(",", local.pcluster_ami_ids),
+    #    deeplearning_amis        = join(",", data.aws_ami.deeplearning.*.id)
+    #    config_files             = join(",", local.pcluster_ami_build_config_files)
+    #    make_dirs_command        = join(",", local.make_dirs_command)
   }
 }
 
