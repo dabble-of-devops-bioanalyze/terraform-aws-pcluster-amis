@@ -149,7 +149,7 @@ locals {
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
   ])
   pcluster_ami_build_cloudformation_status_files = flatten([
-  for i in range(length(local.ami_ids)) : "files/cloudformation-pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
+  for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
   ])
   pcluster_ami_build_pcluster_describe_files = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster-ami-${local.pcluster_ami_ids[i]}.json"
@@ -384,7 +384,7 @@ data "local_file" "pcluster_amis" {
 }
 
 locals {
-  pcluster_amis = [for pcluster_ami in data.local_file.pcluster_stacks : jsondecode(pcluster_ami.content)]
+  pcluster_amis = [for pcluster_ami in data.local_file.pcluster_amis : jsondecode(pcluster_ami.content)]
 }
 
 output "pcluster_build_image_amis" {
