@@ -300,16 +300,16 @@ EOF
   }
 }
 
-data "local_file" "pcluster_stacks" {
-  depends_on = [
-    null_resource.make_dirs,
-    null_resource.pcluster_build_images,
-    local_file.pcluster_build_configurations,
-    null_resource.pcluster_get_cloudformation_templates
-  ]
-  count    = length(local.pcluster_image_build_template)
-  filename = local.pcluster_ami_build_cloudformation_template_files[count.index]
-}
+#data "local_file" "pcluster_stacks" {
+#  depends_on = [
+#    null_resource.make_dirs,
+#    null_resource.pcluster_build_images,
+#    local_file.pcluster_build_configurations,
+#    null_resource.pcluster_get_cloudformation_templates
+#  ]
+#  count    = length(local.pcluster_image_build_template)
+#  filename = local.pcluster_ami_build_cloudformation_template_files[count.index]
+#}
 
 
 # TODO Write a python script to run sanity checks for images and stacks
