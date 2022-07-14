@@ -367,6 +367,8 @@ resource "null_resource" "pcluster_image_creation_check" {
   ]
   provisioner "local-exec" {
     command = <<EOF
+# TODO this is goofy. Write a script
+sleep 5m
 pcluster describe-image \
   -r ${var.region} \
   --image-id ${local.pcluster_ami_ids[count.index]} > ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
