@@ -408,6 +408,14 @@ resource "null_resource" "pcluster_image_creation_sanity_check" {
   provisioner "local-exec" {
     command = <<EOF
 sleep 5m
+
+echo "Describing image: ${local.pcluster_ami_ids[count.index]}"
+
+pcluster describe-image \
+  -r ${var.region} \
+  --image-id ${local.pcluster_ami_ids[count.index]} \
+
+echo "Ami ID image: ${local.pcluster_ami_ids[count.index]}"
 pcluster describe-image \
   -r ${var.region} \
   --image-id ${local.pcluster_ami_ids[count.index]} \
