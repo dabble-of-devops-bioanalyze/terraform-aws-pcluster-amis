@@ -368,6 +368,7 @@ resource "null_resource" "pcluster_image_creation_check" {
   provisioner "local-exec" {
     command = <<EOF
 pcluster describe-image \
+  -r ${var.region} \
   --image-id ${local.pcluster_ami_ids[count.index]} > ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
 EOF
   }
@@ -405,6 +406,7 @@ resource "null_resource" "pcluster_image_creation_sanity_check" {
   provisioner "local-exec" {
     command = <<EOF
 pcluster describe-image \
+  -r ${var.region} \
   --image-id ${local.pcluster_ami_ids[count.index]} \
   --query 'ec2AmiInfo.amiId'
 EOF
