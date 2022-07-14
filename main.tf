@@ -1,7 +1,9 @@
+resource "time_static" "this" {}
+
 locals {
-  dt      = formatdate("YYYYMMDD", timestamp())
-  dt_day  = formatdate("YYYYMMDD", timestamp())
-  dt_time = formatdate("YYYYMMDD-hh-mm-ss", timestamp())
+  dt      = formatdate("YYYYMMDD", time_static.this.rfc3339)
+  dt_day  = formatdate("YYYYMMDD", time_static.this.rfc3339)
+  dt_time = formatdate("YYYYMMDD-hh-mm-ss", time_static.this.rfc3339)
 }
 
 locals {
