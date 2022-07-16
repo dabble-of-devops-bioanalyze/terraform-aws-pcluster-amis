@@ -80,7 +80,7 @@ phases:
               sudo yum install --quiet -y curl unzip wget git gitflow zsh \
                 Lmod \
                 sudo conda python3 pip3 amazon-efs-utils quota curl \
-                htop atop  \
+                htop atop tree \
                 perl-devel perl-threads \
                 golang \
                 python3-devel s3fs-fuse \
@@ -92,7 +92,7 @@ phases:
                 singularity-runtime singularity
 
               curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
-              sudo yum install -y nodejs npm
+              sudo yum install -y nodejs npm --skip-broken
               sudo npm install -g configurable-http-proxy vtop
               # nextflow needs java >= 11
               sudo amazon-linux-extras install -y java-openjdk11 R4
