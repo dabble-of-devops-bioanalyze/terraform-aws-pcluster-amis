@@ -347,7 +347,8 @@ resource "null_resource" "pcluster_wait" {
     command = <<EOF
 # pcluster deletes the stack
 # so once this operation is done it will fail with a message about expecting output
-for i in {1..20}; do aws cloudformation wait stack-create-complete --stack-name ${local.pcluster_ami_ids[count.index]} ; break || sleep 5m; done
+for i in {1..1000}; do aws cloudformation wait stack-create-complete --stack-name ${local.pcluster_ami_ids[count.index]} ; break || sleep 5m; done
+sleep 10m
 EOF
   }
 }
@@ -368,7 +369,6 @@ resource "null_resource" "pcluster_image_creation_check" {
   provisioner "local-exec" {
     command = <<EOF
 # TODO this is goofy. Write a script
-sleep 5m
 pcluster describe-image \
   -r ${var.region} \
   --image-id ${local.pcluster_ami_ids[count.index]} > ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
@@ -407,8 +407,6 @@ resource "null_resource" "pcluster_image_creation_sanity_check" {
   ]
   provisioner "local-exec" {
     command = <<EOF
-sleep 5m
-
 echo "Describing image: ${local.pcluster_ami_ids[count.index]}"
 
 pcluster describe-image \
@@ -423,30 +421,6 @@ pcluster describe-image \
 EOF
   }
 }
-#
-#data "aws_ami" "pcluster_build_image_amis" {
-#  count      = length(local.pcluster_image_build_template)
-#  depends_on = [
-#    local_file.pcluster_build_configurations,
-#    data.local_file.pcluster_stacks,
-#    data.local_file.scientific_stack,
-#    aws_imagebuilder_component.scientific_stack,
-#    null_resource.pcluster_wait,
-#    null_resource.pcluster_build_images,
-#    null_resource.pcluster_get_cloudformation_statuses,
-#    null_resource.pcluster_image_creation_sanity_check,
-#  ]
-#  most_recent = true
-#  owners      = ["self"]
-#
-#  filter {
-#    name   = "name"
-#    values = [
-#      "${local.pcluster_ami_names[count.index]}*",
-#    ]
-#  }
-#}
-#
 
 output "pcluster_ami_ids" {
   value = local.pcluster_ami_ids
