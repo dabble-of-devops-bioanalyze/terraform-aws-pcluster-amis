@@ -52,22 +52,6 @@ phases:
               # Only supporting AWS Linux 2 based amis at this time
 
               ################################################
-              # Install Miniconda
-              ################################################
-              # Import our GPG public key
-              echo "Installing miniconda"
-              sudo rpm --import https://repo.anaconda.com/pkgs/misc/gpgkeys/anaconda.asc
-              # Add the Anaconda repository
-              cat <<EOF > /etc/yum.repos.d/conda.repo
-              [conda]
-              name=Conda
-              baseurl=https://repo.anaconda.com/pkgs/misc/rpmrepo/conda
-              enabled=1
-              gpgcheck=1
-              gpgkey=https://repo.anaconda.com/pkgs/misc/gpgkeys/anaconda.asc
-              EOF
-
-              ################################################
               # Install Packages
               ################################################
 
@@ -117,22 +101,6 @@ phases:
               else
                  wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64
               fi
-
-              ################################################
-              # Install EasyBuild
-              ################################################
-
-              echo "Installing python packages"
-              sudo pip3 install boto3 ansible==2.1.3 || echo 'Unable to install packages'
-
-              # we need to use miniconda to install easybuild. it doesn't play well with all pythons
-              source /opt/conda/etc/profile.d/conda.sh || echo 'Unable to source conda'
-              sudo /opt/conda/condabin/conda clean -y -a || echo 'Unable to clean conda'
-              sudo mkdir -p /opt/conda/pkgs/ || echo 'Unable to create conda pkg dir'
-              sudo touch /opt/conda/pkgs/urls.txt || echo 'Unable to create url file'
-              sudo chown -R ec2-user:ec2-user /opt/conda/pkgs/ || echo 'Unable to chown packages'
-              conda env create -n easybuild python=3.6 pip || echo 'Unable to create easybuild python'
-              source activate easybuild && pip install easybuild==4.5.4 || echo 'Unable to activate easybuild'
 
               ################################################
               # Install Prometheus Slurm Exporter
