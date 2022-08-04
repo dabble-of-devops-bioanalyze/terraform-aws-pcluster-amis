@@ -1,9 +1,10 @@
 resource "time_static" "this" {}
 
 locals {
-  dt      = formatdate("YYYYMMDD", time_static.this.rfc3339)
-  dt_day  = formatdate("YYYYMMDD", time_static.this.rfc3339)
-  dt_time = formatdate("YYYYMMDD-hh-mm-ss", time_static.this.rfc3339)
+  dt         = formatdate("YYYYMMDD", time_static.this.rfc3339)
+  dt_day     = formatdate("YYYYMMDD", time_static.this.rfc3339)
+  dt_time    = formatdate("YYYYMMDD-hh-mm-ss", time_static.this.rfc3339)
+  dt_version = formatdate("YYYY.MM.DD", time_static.this.rfc3339)
 }
 
 locals {
@@ -89,14 +90,16 @@ locals {
 }
 
 resource "aws_imagebuilder_component" "scientific_stack" {
-  name       = "${module.this.id}-scientific-stack-component-${formatdate("YYYYMMDD", timestamp())}"
+  #  name       = "${module.this.id}-scientific-stack-component-${formatdate("YYYYMMDD", timestamp())}"
+  name       = "${module.this.id}-scientific-stack-component-${local.dt}"
   depends_on = [
     data.local_file.scientific_stack
   ]
   platform = "Linux"
   // Version must be in format: major.minor.patch
   #  version  = "1.0.0"
-  version  = formatdate("YYYY.MM.DD", timestamp())
+  #  version  = formatdate("YYYY.MM.DD", timestamp())
+  version  = local.dt_version
   data     = data.local_file.scientific_stack.content
   tags     = module.this.tags
 }
