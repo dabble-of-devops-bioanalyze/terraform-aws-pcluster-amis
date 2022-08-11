@@ -369,6 +369,7 @@ data "local_file" "pcluster_amis" {
     null_resource.pcluster_build_images,
     local_file.pcluster_build_configurations,
     null_resource.pcluster_get_cloudformation_templates,
+    null_resource.pcluster_wait,
   ]
   count    = length(local.pcluster_image_build_template)
   filename = local.pcluster_ami_build_pcluster_describe_files[count.index]
