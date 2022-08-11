@@ -348,10 +348,13 @@ resource "null_resource" "pcluster_wait" {
   ]
   provisioner "local-exec" {
     command = <<EOF
-# pcluster deletes the stack
-# so once this operation is done it will fail with a message about expecting output
-for i in {1..1000}; do aws cloudformation wait stack-create-complete --stack-name ${local.pcluster_ami_ids[count.index]} ; break || sleep 5m; done
-sleep 10m
+# this operation always takes ~1.5 hours
+
+pcluster-bootstrap-helper build-ami-watcher \
+  --region ${var.region} \
+  --image-id ${local.pcluster_ami_ids[count.index]} \
+  --output ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
+
 EOF
   }
 }
@@ -360,32 +363,12 @@ output "pcluster_cloudformation_status_files" {
   value = local.pcluster_ami_build_cloudformation_status_files
 }
 
-resource "null_resource" "pcluster_image_creation_check" {
-  count      = length(local.pcluster_image_build_template)
-  triggers   = local.triggers
-  depends_on = [
-    null_resource.make_dirs,
-    local_file.pcluster_build_configurations,
-    null_resource.pcluster_build_images,
-    null_resource.pcluster_wait,
-  ]
-  provisioner "local-exec" {
-    command = <<EOF
-# TODO this is goofy. Write a script
-pcluster describe-image \
-  -r ${var.region} \
-  --image-id ${local.pcluster_ami_ids[count.index]} > ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
-EOF
-  }
-}
-
 data "local_file" "pcluster_amis" {
   depends_on = [
     null_resource.make_dirs,
     null_resource.pcluster_build_images,
     local_file.pcluster_build_configurations,
     null_resource.pcluster_get_cloudformation_templates,
-    null_resource.pcluster_image_creation_check,
   ]
   count    = length(local.pcluster_image_build_template)
   filename = local.pcluster_ami_build_pcluster_describe_files[count.index]
