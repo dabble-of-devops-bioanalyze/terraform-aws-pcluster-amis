@@ -82,6 +82,12 @@ phases:
               sudo amazon-linux-extras install -y java-openjdk11 R4
 
               ################################################
+              # Install Ansible
+              ################################################
+              sudo python3 -m pip install ansible
+              sudo ansible-galaxy install evandam.conda
+
+              ################################################
               # Install Desktops
               # Desktops for DCV and Gnome
               ################################################
@@ -111,11 +117,6 @@ phases:
               cd prometheus-slurm-exporter
               sudo make
 
-              ################################################
-              # Install Ansible
-              ################################################
-              sudo python3 -m pip install ansible
-              sudo ansible-galaxy install evandam.conda
 
               ################################################
               # Install RStudio
