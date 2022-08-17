@@ -66,12 +66,16 @@ phases:
                 unzip curl wget git gitflow zsh
 
               sudo yum install --quiet --skip-broken -y \
-                sudo python3-devel python3 pip3 amazon-efs-utils quota
-
-              sudo yum install --quiet --skip-broken -y htop atop tree
+                openssl openssl-devel
 
               sudo yum install --quiet --skip-broken -y \
-                perl-devel perl-threads \
+                sudo python3-devel python3 pip3 amazon-efs-utils quota
+
+              sudo yum install --quiet --skip-broken -y \
+                htop atop tree
+
+              sudo yum install --quiet --skip-broken -y \
+                perl-devel perl-threads
 
               sudo yum install --quiet --skip-broken -y \
                 s3fs-fuse
