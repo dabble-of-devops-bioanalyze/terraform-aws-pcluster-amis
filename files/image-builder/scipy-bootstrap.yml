@@ -63,7 +63,7 @@ phases:
               sudo yum group install -y 'Development Tools'
 
               sudo yum install --quiet --skip-broken -y \
-                unzip wget git gitflow zsh
+                unzip curl wget git gitflow zsh
 
               sudo yum install --quiet --skip-broken -y \
                 sudo python3-devel python3 pip3 amazon-efs-utils quota
@@ -74,8 +74,10 @@ phases:
                 perl-devel perl-threads \
 
               sudo yum install --quiet --skip-broken -y \
+                s3fs-fuse
+
+              sudo yum install --quiet --skip-broken -y \
                 golang \
-                s3fs-fuse \
                 openssl openssl-devel \
                 vsftpd \
                 libuuid-devel \
@@ -142,7 +144,6 @@ phases:
               git clone https://github.com/vpenso/prometheus-slurm-exporter.git
               cd prometheus-slurm-exporter
               sudo make
-
 
               ################################################
               # Install RStudio
