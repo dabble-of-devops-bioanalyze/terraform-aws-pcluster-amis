@@ -61,7 +61,44 @@ phases:
               sudo yum-config-manager --enable epel
               sudo yum update -y; yum upgrade -y
               sudo yum group install -y 'Development Tools'
-              sudo yum install --quiet -y curl unzip wget git gitflow zsh \
+
+              sudo yum install --quiet --skip-broken -y \
+                unzip wget git gitflow zsh
+
+              sudo yum install --quiet --skip-broken -y \
+                sudo python3-devel python3 pip3 amazon-efs-utils quota
+
+              sudo yum install --quiet --skip-broken -y htop atop tree
+
+              sudo yum install --quiet --skip-broken -y \
+                perl-devel perl-threads \
+
+              sudo yum install --quiet --skip-broken -y \
+                golang \
+                s3fs-fuse \
+                openssl openssl-devel \
+                vsftpd \
+                libuuid-devel \
+                libseccomp-devel \
+                squashfs-tools
+
+              sudo yum install --quiet --skip-broken -y \
+                singularity-runtime singularity
+
+              curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
+              sudo yum install -y nodejs npm --skip-broken
+              sudo npm install -g configurable-http-proxy vtop
+              # nextflow needs java >= 11
+              sudo amazon-linux-extras install -y java-openjdk11 R4
+
+              ################################################
+              # Install system packages - Fail safe
+              ################################################
+              sudo amazon-linux-extras install -y epel
+              sudo yum-config-manager --enable epel
+              sudo yum update -y; yum upgrade -y
+              sudo yum group install -y 'Development Tools'
+              sudo yum install --quiet --skip-broken -y curl unzip wget git gitflow zsh \
                 Lmod \
                 sudo python3 pip3 amazon-efs-utils quota curl \
                 htop atop tree \
@@ -75,12 +112,6 @@ phases:
                 squashfs-tools \
                 singularity-runtime singularity
 
-              curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
-              sudo yum install -y nodejs npm --skip-broken
-              sudo npm install -g configurable-http-proxy vtop
-              # nextflow needs java >= 11
-              sudo amazon-linux-extras install -y java-openjdk11 R4
-
               ################################################
               # Install Ansible
               ################################################
@@ -92,11 +123,6 @@ phases:
               # Desktops for DCV and Gnome
               ################################################
               sudo yum -y groups install "GNOME Desktop"
-
-              ################################################
-              # Install YQ
-              ################################################
-              yum -y groups install "GNOME Desktop"
 
               ################################################
               # Install YQ
