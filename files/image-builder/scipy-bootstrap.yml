@@ -70,7 +70,7 @@ phases:
                 zlib-devel unzip curl wget git gitflow zsh
 
               sudo yum install --quiet --skip-broken -y \
-                sudo python3-devel python3 amazon-efs-utils quota
+                sudo supervisor python3-devel python3 amazon-efs-utils quota
 
               sudo yum install --quiet --skip-broken -y \
                 htop atop tree
