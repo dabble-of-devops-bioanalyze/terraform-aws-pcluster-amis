@@ -61,18 +61,22 @@ phases:
               sudo yum-config-manager --enable epel
               sudo yum update -y; yum upgrade -y
               sudo yum group install -y 'Development Tools'
+              sudo yum group install -y "GNOME Desktop"
 
               sudo yum install --quiet --skip-broken -y \
-                unzip curl wget git gitflow zsh
+                zlib-devel openssl openssl-devel libxml2-devel xorg-x11-server-Xorg
 
               sudo yum install --quiet --skip-broken -y \
-                openssl openssl-devel
+                zlib-devel unzip curl wget git gitflow zsh
 
               sudo yum install --quiet --skip-broken -y \
-                sudo python3-devel python3 pip3 amazon-efs-utils quota
+                sudo python3-devel python3 amazon-efs-utils quota
 
               sudo yum install --quiet --skip-broken -y \
                 htop atop tree
+
+              sudo yum install --quiet --skip-broken -y \
+                parallel || echo "Unable to install parallel"
 
               sudo yum install --quiet --skip-broken -y \
                 perl-devel perl-threads
@@ -82,7 +86,6 @@ phases:
 
               sudo yum install --quiet --skip-broken -y \
                 golang \
-                openssl openssl-devel \
                 vsftpd \
                 libuuid-devel \
                 libseccomp-devel \
@@ -91,11 +94,14 @@ phases:
               sudo yum install --quiet --skip-broken -y \
                 singularity-runtime singularity
 
+              sudo yum install --quiet --skip-broken -y \
+                aria2
+
               curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
               sudo yum install -y nodejs npm --skip-broken
               sudo npm install -g configurable-http-proxy vtop
               # nextflow needs java >= 11
-              sudo amazon-linux-extras install -y java-openjdk11 R4
+              sudo amazon-linux-extras install -y java-openjdk11
 
               ################################################
               # Install system packages - Fail safe
@@ -104,9 +110,12 @@ phases:
               sudo yum-config-manager --enable epel
               sudo yum update -y; yum upgrade -y
               sudo yum group install -y 'Development Tools'
-              sudo yum install --quiet --skip-broken -y curl unzip wget git gitflow zsh \
+              sudo yum install --quiet --skip-broken -y \
+                zlib-devel openssl openssl-devel libxml2-devel xorg-x11-server-Xorg \
+                curl unzip wget git gitflow zsh \
+                aria2 \
                 Lmod \
-                sudo python3 pip3 amazon-efs-utils quota curl \
+                sudo python3 amazon-efs-utils quota curl \
                 htop atop tree \
                 perl-devel perl-threads \
                 golang \
@@ -153,9 +162,11 @@ phases:
               # Install RStudio
               ################################################
 
-              echo "Installing RStudio"
+              echo "Installing R4"
+              sudo amazon-linux-extras install -y R4
 
               # RStudio 2022.02.01
+              echo "Installing RStudio"
               wget https://download2.rstudio.org/server/centos7/x86_64/rstudio-server-rhel-2022.02.1-461-x86_64.rpm
               sudo yum install -y rstudio-server-rhel-2022.02.1-461-x86_64.rpm
               rm -rf rstudio-server-rhel-2022.02.1-461-x86_64.rpm
