@@ -175,6 +175,15 @@ phases:
               sudo rstudio-server stop || echo "Unable to stop rstudio server"
 
               ################################################
+              # Install R packages
+              ################################################
+              Rscript -e "install.packages(c('BiocManager'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('tidyverse'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('arrow'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('XML'), repos='https://cran.rstudio.com')"
+              Rscript -e "BiocManager::install(version = '3.15')"
+
+              ################################################
               # Install Docker
               ################################################
               echo "Installing docker"
