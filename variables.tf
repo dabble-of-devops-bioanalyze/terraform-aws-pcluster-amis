@@ -57,9 +57,9 @@ variable "ami_name" {
 ##################################################
 
 variable "pcluster_version" {
-  default = "3.1.2"
+  default = "3.2"
 }
 
-variable "additional_components" {
+variable "additional_component_arns" {
   default = []
 }

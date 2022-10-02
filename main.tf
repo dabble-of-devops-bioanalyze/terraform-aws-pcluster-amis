@@ -15,7 +15,6 @@ output "ami_name" {
   value = local.ami_name
 }
 
-
 data "aws_ami" "pcluster" {
   most_recent = true
   owners      = ["247102896272"]
@@ -113,6 +112,7 @@ locals {
   components = flatten([
     data.aws_imagebuilder_component.aws_imagebuilder_components[*].arn,
     aws_imagebuilder_component.scientific_stack.arn,
+    var.additional_component_arns,
   ])
 }
 
