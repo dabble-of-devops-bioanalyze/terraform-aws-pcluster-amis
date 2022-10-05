@@ -89,7 +89,6 @@ locals {
 }
 
 resource "aws_imagebuilder_component" "scientific_stack" {
-  #  name       = "${module.this.id}-scientific-stack-component-${formatdate("YYYYMMDD", timestamp())}"
   name       = "${module.this.id}-scientific-stack-component-${local.dt}"
   depends_on = [
     data.local_file.scientific_stack
@@ -106,7 +105,6 @@ resource "aws_imagebuilder_component" "scientific_stack" {
 output "scientific_stack" {
   value = aws_imagebuilder_component.scientific_stack
 }
-
 
 locals {
   components = flatten([
@@ -231,21 +229,12 @@ pcluster delete-image \
   --image-id ${local.pcluster_ami_ids[i]} \
   -r ${var.region} || echo "Image does not exist"
 
-pcluster build-image \
-  --image-id ${local.pcluster_ami_ids[i]} \
-  -r ${var.region} \
-  -c ${local.pcluster_ami_build_config_files[i]}
 EOF
   ])
 }
 
 locals {
   triggers = {
-    #    pcluster_build_templates = join(",", [for i in local.pcluster_image_build_template :  yamlencode(i)])
-    #    pcluster_ami_ids         = join(",", local.pcluster_ami_ids),
-    #    deeplearning_amis        = join(",", data.aws_ami.deeplearning.*.id)
-    #    config_files             = join(",", local.pcluster_ami_build_config_files)
-    #    make_dirs_command        = join(",", local.make_dirs_command)
   }
 }
 
@@ -285,90 +274,35 @@ resource "null_resource" "pcluster_build_images" {
   }
 }
 
-
-resource "null_resource" "pcluster_get_cloudformation_templates" {
-  count      = length(local.pcluster_image_build_template)
-  depends_on = [
-    null_resource.make_dirs,
-    null_resource.pcluster_build_images,
-    local_file.pcluster_build_configurations,
-  ]
-  triggers = local.triggers
-  provisioner "local-exec" {
-    command = <<EOF
-  sleep 60
-  echo "Fetching cloudformation templates"
-  aws cloudformation get-template \
-      --stack-name \
-    ${local.pcluster_ami_ids[count.index]} > ${local.pcluster_ami_build_cloudformation_template_files[count.index]}
-EOF
-  }
-}
-
-#data "local_file" "pcluster_stacks" {
-#  depends_on = [
-#    null_resource.make_dirs,
-#    null_resource.pcluster_build_images,
-#    local_file.pcluster_build_configurations,
-#    null_resource.pcluster_get_cloudformation_templates
-#  ]
-#  count    = length(local.pcluster_image_build_template)
-#  filename = local.pcluster_ami_build_cloudformation_template_files[count.index]
-#}
-
-
-# TODO Write a python script to run sanity checks for images and stacks
-resource "null_resource" "pcluster_get_cloudformation_statuses" {
-  count      = length(local.pcluster_image_build_template)
-  depends_on = [
-    null_resource.make_dirs,
-    null_resource.pcluster_build_images,
-    null_resource.pcluster_get_cloudformation_templates,
-    local_file.pcluster_build_configurations,
-  ]
-  triggers = local.triggers
-  provisioner "local-exec" {
-    command = <<EOF
-# pcluster deletes the stack
-# so once this operation is done it will fail with a message about expecting output
-aws cloudformation describe-stacks \
-      --stack-name ${local.pcluster_ami_ids[count.index]} >  ${local.pcluster_ami_build_cloudformation_status_files[count.index]}  || echo "Unable to get cloudformation stack data"
-EOF
-  }
-}
-
 resource "null_resource" "pcluster_wait" {
   count      = length(local.pcluster_image_build_template)
   triggers   = local.triggers
   depends_on = [
     null_resource.make_dirs,
     null_resource.pcluster_build_images,
-    null_resource.pcluster_get_cloudformation_templates,
     local_file.pcluster_build_configurations,
   ]
   provisioner "local-exec" {
     command = <<EOF
 # this operation always takes ~1.5 hours
 
-pcluster-bootstrap-helper build-ami-watcher \
+pcluster-bootstrap-helper \
+  build-and-watch-ami \
   --region ${var.region} \
-  --image-id ${local.pcluster_ami_ids[count.index]} \
+  --config-file ${local.pcluster_ami_build_config_files[i]} \
+  --image-id ${local.pcluster_ami_ids[i]} \
   --output ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
 
 EOF
   }
 }
 
-output "pcluster_cloudformation_status_files" {
-  value = local.pcluster_ami_build_cloudformation_status_files
-}
 
 data "local_file" "pcluster_amis" {
   depends_on = [
     null_resource.make_dirs,
     null_resource.pcluster_build_images,
     local_file.pcluster_build_configurations,
-    null_resource.pcluster_get_cloudformation_templates,
     null_resource.pcluster_wait,
   ]
   count    = length(local.pcluster_image_build_template)
@@ -398,7 +332,7 @@ echo "Describing image: ${local.pcluster_ami_ids[count.index]}"
 
 pcluster describe-image \
   -r ${var.region} \
-  --image-id ${local.pcluster_ami_ids[count.index]} \
+  --image-id ${local.pcluster_ami_ids[count.index]}
 
 echo "Ami ID image: ${local.pcluster_ami_ids[count.index]}"
 pcluster describe-image \
@@ -416,7 +350,3 @@ output "pcluster_ami_ids" {
 output "pcluster_ami_names" {
   value = local.pcluster_ami_names
 }
-
-#output "pcluster_build_image_amis" {
-#  value = data.aws_ami.pcluster_build_image_amis
-#}
