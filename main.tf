@@ -289,8 +289,8 @@ resource "null_resource" "pcluster_wait" {
 pcluster-bootstrap-helper \
   build-and-watch-ami \
   --region ${var.region} \
-  --config-file ${local.pcluster_ami_build_config_files[i]} \
-  --image-id ${local.pcluster_ami_ids[i]} \
+  --config-file ${local.pcluster_ami_build_config_files[count.index]} \
+  --image-id ${local.pcluster_ami_ids[count.index]} \
   --output ${local.pcluster_ami_build_pcluster_describe_files[count.index]}
 
 EOF
