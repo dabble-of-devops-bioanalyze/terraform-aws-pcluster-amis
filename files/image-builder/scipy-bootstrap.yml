@@ -98,7 +98,7 @@ phases:
                 aria2
 
               curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
-              sudo yum install -y nodejs npm --skip-broken
+              sudo yum install --quiet --skip-broken -y nodejs npm --skip-broken
               sudo npm install -g configurable-http-proxy vtop
               # nextflow needs java >= 11
               sudo amazon-linux-extras install -y java-openjdk11
@@ -203,3 +203,32 @@ phases:
               sudo wget https://code-server.dev/install.sh
               export HOME=/root
               bash ./install.sh || echo "Unable to install vscode"
+
+      - name: Sanity Checks
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              ################################################
+              # Sanity Checks
+              ################################################
+              which singularity    || echo "singularity not installed"
+              which node           || echo "nodejs not installed"
+              which R              || echo "R not installed"
+              which rstudio-server || echo "RStudio not installed"
+              which htop           || echo "htop not installed"
+              which tree           || echo "tree not installed"
+      - name: Fail if not installed
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              ################################################
+              # Fail if not installed
+              ################################################
+              which singularity    || exit 256
+              which node           || exit 256
+              which R              || exit 256
+              which rstudio-server || exit 256
+              which htop           || exit 256
+              which tree           || exit 256
