@@ -36,9 +36,8 @@ variable "instance_type" {
 variable "deep_learning_amis" {
   description = "List of DeepLearning AMIs to build additional pcluster images."
   default     = [
-    "Deep Learning AMI (Amazon Linux 2) Version 6*",
-    "Deep Learning AMI GPU PyTorch 1* (Amazon Linux 2)*",
-    "Deep Learning AMI GPU TensorFlow 2* (Amazon Linux 2)*",
+    "Deep Learning AMI (Amazon Linux 2) Version 61*",
+    "Deep Learning AMI GPU PyTorch 1* (Amazon Linux 2) 2022*",
   ]
 }
 

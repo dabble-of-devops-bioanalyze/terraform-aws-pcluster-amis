@@ -22,12 +22,6 @@ schemaVersion: 1.0
 phases:
   - name: build
     steps:
-      - name: Fail
-        action: ExecuteBash
-        inputs:
-          commands:
-            - echo 1
-
       - name: OperatingSystemRelease
         action: ExecuteBash
         inputs:
@@ -42,6 +36,170 @@ phases:
                 exit {{ build.Fail.outputs.stdout }}
               fi
 
+      - name: InstallationRequirements
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+              # TODO
+              # Only supporting AWS Linux 2 based amis at this time
+
+              ################################################
+              # Install Packages
+              ################################################
+
+              # Install packages
+              echo "Installing system packages"
+              sudo amazon-linux-extras install -y epel
+              sudo yum-config-manager --enable epel
+              sudo yum update -y; yum upgrade -y
+              sudo yum group install -y 'Development Tools'
+              sudo yum group install -y "GNOME Desktop"
+
+              sudo yum install --quiet --skip-broken -y \
+                zlib-devel openssl openssl-devel libxml2-devel xorg-x11-server-Xorg
+
+              sudo yum install --quiet --skip-broken -y \
+                zlib-devel unzip curl wget git gitflow zsh
+
+              sudo yum install --quiet --skip-broken -y \
+                sudo supervisor python3-devel python3 amazon-efs-utils quota
+
+              sudo yum install --quiet --skip-broken -y \
+                htop atop tree
+
+              sudo yum install --quiet --skip-broken -y \
+                parallel || echo "Unable to install parallel"
+
+              sudo yum install --quiet --skip-broken -y \
+                perl-devel perl-threads
+
+              sudo yum install --quiet --skip-broken -y \
+                s3fs-fuse
+
+              sudo yum install --quiet --skip-broken -y \
+                golang \
+                vsftpd \
+                libuuid-devel \
+                libseccomp-devel \
+                squashfs-tools
+
+              sudo yum install --quiet --skip-broken -y \
+                singularity-runtime singularity
+
+              sudo yum install --quiet --skip-broken -y \
+                aria2
+
+              curl -sL https://rpm.nodesource.com/setup_14.x | sudo bash -
+              sudo yum install --quiet --skip-broken -y nodejs npm --skip-broken
+              sudo npm install -g configurable-http-proxy vtop
+              # nextflow needs java >= 11
+              sudo amazon-linux-extras install -y java-openjdk11
+
+              ################################################
+              # Install system packages - Fail safe
+              ################################################
+              sudo amazon-linux-extras install -y epel
+              sudo yum-config-manager --enable epel
+              sudo yum update -y; yum upgrade -y
+              sudo yum group install -y 'Development Tools'
+              sudo yum install --quiet --skip-broken -y \
+                zlib-devel openssl openssl-devel libxml2-devel xorg-x11-server-Xorg \
+                curl unzip wget git gitflow zsh \
+                aria2 \
+                Lmod \
+                sudo python3 amazon-efs-utils quota curl \
+                htop atop tree \
+                perl-devel perl-threads \
+                golang \
+                python3-devel s3fs-fuse \
+                openssl openssl-devel \
+                vsftpd \
+                libuuid-devel \
+                libseccomp-devel \
+                squashfs-tools \
+                singularity-runtime singularity
+
+              ################################################
+              # Install Ansible
+              ################################################
+              sudo python3 -m pip install ansible
+              sudo ansible-galaxy install evandam.conda
+
+              ################################################
+              # Install Desktops
+              # Desktops for DCV and Gnome
+              ################################################
+              sudo yum -y groups install "GNOME Desktop"
+
+              ################################################
+              # Install YQ
+              ################################################
+
+              if [[ $(uname -m) == "aarch64" ]];then
+                 wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_arm64
+              else
+                 wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64
+              fi
+
+              ################################################
+              # Install Prometheus Slurm Exporter
+              ################################################
+
+              cd /tmp
+              git clone https://github.com/vpenso/prometheus-slurm-exporter.git
+              cd prometheus-slurm-exporter
+              sudo make
+
+              ################################################
+              # Install RStudio
+              ################################################
+
+              echo "Installing R4"
+              sudo amazon-linux-extras install -y R4
+
+              # RStudio 2022.02.01
+              echo "Installing RStudio"
+              wget https://download2.rstudio.org/server/centos7/x86_64/rstudio-server-rhel-2022.02.1-461-x86_64.rpm
+              sudo yum install -y rstudio-server-rhel-2022.02.1-461-x86_64.rpm
+              rm -rf rstudio-server-rhel-2022.02.1-461-x86_64.rpm
+
+              sudo systemctl daemon-reload
+              sudo rstudio-server stop || echo "Unable to stop rstudio server"
+
+              ################################################
+              # Install R packages
+              ################################################
+              Rscript -e "install.packages(c('BiocManager'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('tidyverse'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('arrow'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('XML'), repos='https://cran.rstudio.com')"
+              Rscript -e "BiocManager::install(version = '3.15')"
+
+              ################################################
+              # Install Docker
+              ################################################
+              echo "Installing docker"
+              sudo amazon-linux-extras install -y docker
+              sudo service docker start
+              sudo groupmod -g 500 docker
+              sudo systemctl enable --now docker
+
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.2.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+
+              ################################################
+              # Install VSCode
+              ################################################
+
+              echo "Installing vscode"
+              sudo wget https://code-server.dev/install.sh
+              export HOME=/root
+              bash ./install.sh || echo "Unable to install vscode"
+
+  - name: validate
+    steps:
       - name: InstallationRequirements
         action: ExecuteBash
         inputs:

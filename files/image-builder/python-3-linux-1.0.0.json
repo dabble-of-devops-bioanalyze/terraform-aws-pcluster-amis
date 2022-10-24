@@ -1,0 +1,20 @@
+{
+    "requestId": "4c2ac8f4-5a94-49f7-9fe6-a74603e7c11d",
+    "component": {
+        "arn": "arn:aws:imagebuilder:us-east-1:aws:component/python-3-linux/1.0.0/1",
+        "name": "python-3-linux",
+        "version": "1.0.0",
+        "description": "Installs the latest version of Python 3",
+        "changeDescription": "Initial Version",
+        "type": "BUILD",
+        "platform": "Linux",
+        "supportedOsVersions": [
+            "Amazon Linux 2"
+        ],
+        "owner": "Amazon",
+        "data": "# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.\n# SPDX-License-Identifier: MIT-0\n#\n# Permission is hereby granted, free of charge, to any person obtaining a copy of this\n# software and associated documentation files (the \"Software\"), to deal in the Software\n# without restriction, including without limitation the rights to use, copy, modify,\n# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to\n# permit persons to whom the Software is furnished to do so.\n#\n# THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\n# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A\n# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT\n# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION\n# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\n# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\nname: Python 3\ndescription: Install the latest version of Python 3.\nschemaVersion: 1.0\nphases:\n  - name: build\n    steps:\n      - name: InstallPython3\n        action: ExecuteBash\n        inputs:\n          commands:\n            - sudo yum install python3 -y\n\n  - name: validate\n    steps:\n      - name: ValidatePython3\n        action: ExecuteBash\n        inputs:\n          commands:\n            - |\n              if type -P python3 &>/dev/null; then\n                  echo \"The python3 command exists.\"\n              else\n                  echo \"The python3 command does not exist. Failing.\"\n                  exit 1\n              fi\n\n              python3 --version\n              if [[ $? == 0 ]]; then\n                  echo \"python3 was successfully invoked.\"\n              else\n                  echo \"python3 could not be invoked. Failing.\"\n                  exit 1\n              fi\n",
+        "encrypted": true,
+        "dateCreated": "2019-12-01T04:35:51.932Z",
+        "tags": {}
+    }
+}

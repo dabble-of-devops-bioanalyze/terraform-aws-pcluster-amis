@@ -1,0 +1,227 @@
+{
+    "requestId": "2a26c417-1aa8-4f8c-8971-576afcca9424",
+    "componentVersionList": [
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-cloudwatch-agent-linux/1.0.1",
+            "name": "amazon-cloudwatch-agent-linux",
+            "version": "1.0.1",
+            "description": "Installs the latest version of the Amazon CloudWatch agent. This component installs only the agent. You must take additional steps to configure and use the Amazon CloudWatch agent. For more information, see the documentation at https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-on-EC2-Instance.html.",
+            "platform": "Linux",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2021-10-12T15:15:15.974Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-cloudwatch-agent-windows/1.0.0",
+            "name": "amazon-cloudwatch-agent-windows",
+            "version": "1.0.0",
+            "description": "Installs the latest version of the Amazon CloudWatch agent. This component installs only the agent. You must take additional steps to configure and use the Amazon CloudWatch agent. For more information, see the documentation at https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-on-EC2-Instance.html.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-07-08T05:12:55.846Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-11-apt-generic/1.0.0",
+            "name": "amazon-corretto-11-apt-generic",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 11 for Debian-based Linux platforms in accordance with the Amazon Corretto 11 User Guide at https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/generic-linux-install.html.",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Ubuntu"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:49:42.735Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-11-headless/1.0.0",
+            "name": "amazon-corretto-11-headless",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 11 Headless",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Amazon Linux 2"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2019-12-01T03:24:43.419Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-11-rpm-generic/1.0.0",
+            "name": "amazon-corretto-11-rpm-generic",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 11 for RPM-based Linux platforms in accordance with the Amazon Corretto 11 User Guide at https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/generic-linux-install.html.",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "CentOS",
+                "Red Hat Enterprise Linux",
+                "SLES"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:49:49.964Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-11-windows/1.0.0",
+            "name": "amazon-corretto-11-windows",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 11 for Windows in accordance with the Amazon Corretto 11 User Guide at https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/windows-7-install.html.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:49:39.915Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-11/1.0.0",
+            "name": "amazon-corretto-11",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 11",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Amazon Linux 2"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2019-12-01T03:25:01.588Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-8-apt-generic/1.0.0",
+            "name": "amazon-corretto-8-apt-generic",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 8 for Debian-based Linux platforms in accordance with the Amazon Corretto 8 User Guide at https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/generic-linux-install.html.",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Ubuntu"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:49:52.616Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-8-jdk/1.0.0",
+            "name": "amazon-corretto-8-jdk",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 8 JDK from Amazon Linux Extras",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Amazon Linux 2"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2019-12-01T03:25:21.305Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-8-jre/1.0.0",
+            "name": "amazon-corretto-8-jre",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 8 JRE from Amazon Linux Extras",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Amazon Linux 2"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2019-12-01T03:25:40.065Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-8-rpm-generic/1.0.0",
+            "name": "amazon-corretto-8-rpm-generic",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 8 for RPM-based Linux platforms in accordance with the Amazon Corretto 8 User Guide at https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/generic-linux-install.html.",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "CentOS",
+                "Red Hat Enterprise Linux",
+                "SLES"
+            ],
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:50:25.251Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-corretto-8-windows/1.0.0",
+            "name": "amazon-corretto-8-windows",
+            "version": "1.0.0",
+            "description": "Installs Amazon Corretto 8 for Windows in accordance with the Amazon Corretto 8 User Guide at https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/windows-7-install.html.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:49:55.019Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/amazon-kinesis-agent-windows/1.0.0",
+            "name": "amazon-kinesis-agent-windows",
+            "version": "1.0.0",
+            "description": "Installs the latest version of Amazon Kinesis Agent for Windows.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2021-02-09T06:28:54.419Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/anaconda-windows/2019.10.0",
+            "name": "anaconda-windows",
+            "version": "2019.10.0",
+            "description": "Installs the Anaconda distribution and environments for Tensorflow, PyTorch, and MXNet.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:50:16.837Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/anaconda-windows/2019.10.1",
+            "name": "anaconda-windows",
+            "version": "2019.10.1",
+            "description": "Installs the Anaconda distribution and environments for Tensorflow, PyTorch, and MXNet.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2021-01-27T16:08:54.888Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/apache-tomcat-9-linux/1.0.1",
+            "name": "apache-tomcat-9-linux",
+            "version": "1.0.1",
+            "description": "Installs the latest version of Apache Tomcat and the JRE, sets required environment variables, and schedules Tomcat to run on startup.",
+            "platform": "Linux",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-12-23T16:10:23.206Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/apt-repository-test-linux/1.0.0",
+            "name": "apt-repository-test-linux",
+            "version": "1.0.0",
+            "description": "Tests whether the apt package manager is functioning correctly.",
+            "platform": "Linux",
+            "supportedOsVersions": [
+                "Ubuntu"
+            ],
+            "type": "TEST",
+            "owner": "Amazon",
+            "dateCreated": "2020-04-16T15:49:44.951Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/aws-cli-version-2-linux/1.0.3",
+            "name": "aws-cli-version-2-linux",
+            "version": "1.0.3",
+            "description": "Installs the latest version of the AWS CLI version 2, and creates the symlink /usr/bin/aws that points to the installed application. For more information, see https://docs.aws.amazon.com/cli/latest/userguide/.",
+            "platform": "Linux",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2021-09-17T05:58:39.992Z"
+        },
+        {
+            "arn": "arn:aws:imagebuilder:us-east-2:aws:component/aws-cli-version-2-windows/1.0.0",
+            "name": "aws-cli-version-2-windows",
+            "version": "1.0.0",
+            "description": "Installs the latest version of the AWS CLI version 2. For more information, review the user guide at https://docs.aws.amazon.com/cli/latest/userguide/.",
+            "platform": "Windows",
+            "type": "BUILD",
+            "owner": "Amazon",
+            "dateCreated": "2020-07-08T05:12:24.564Z"
+        }
+    ],
+    "nextToken": "eyJ2ZXJzaW9uIjogMSwgImxhc3RfZXZhbHVhdGVkX2tleSI6IHsiVmVyc2lvbkFybiI6ICJhcm46YXdzOmltYWdlYnVpbGRlcjp1cy1lYXN0LTI6ODEzMjE1NTYwNzcxOmNvbXBvbmVudC9hd3MtY29kZWRlcGxveS1hZ2VudC1saW51eC8xLjAuMCIsICJBY2NvdW50SWQiOiAiODEzMjE1NTYwNzcxIn0sICJtYXhfcmVzdWx0cyI6IDI1LCAia2V5X2NvbmRpdGlvbnMiOiB7IkFjY291bnRJZCI6IHsiQXR0cmlidXRlVmFsdWVMaXN0IjogWyI4MTMyMTU1NjA3NzEiXSwgIkNvbXBhcmlzb25PcGVyYXRvciI6ICJFUSJ9fSwgImZpbHRlcl9jb25kaXRpb25zIjogW3sibmFtZSI6ICJTdGF0dXMiLCAidmFsdWVzIjogWyJERVBSRUNBVEVEIl0sICJjb21wYXJhdG9yIjogIntrZXl9IDw+IHt2YWx1ZX0ifV0sICJjb25zaXN0ZW50X3JlYWQiOiBmYWxzZSwgInNjYW5faW5kZXhfZm9yd2FyZCI6IHRydWUsICJleHBpcmF0aW9uX2RhdGUiOiAxNjY1NjQ5NzY4fQ=="
+}

@@ -60,7 +60,7 @@ output "deeplearning_ami" {
 }
 
 ################################################
-# EC2 Image Builder Components
+# AWS - EC2 Image Builder Components
 ################################################
 
 locals {
@@ -76,40 +76,77 @@ data "aws_imagebuilder_component" "aws_imagebuilder_components" {
   arn   = "arn:aws:imagebuilder:${var.region}:aws:component/${local.aws_imagebuilder_components[count.index].name}/${local.aws_imagebuilder_components[count.index].version}"
 }
 
-data "local_file" "scientific_stack" {
-  filename = "${path.module}/files/image-builder/scipy-bootstrap.yml"
-}
+################################################
+# Custom - EC2 Image Builder Components
+################################################
 
 locals {
-  scientific_stack = yamldecode(data.local_file.scientific_stack.content)
-}
-
-locals {
-  scientific_stack_yaml = yamlencode(local.scientific_stack)
-}
-
-resource "aws_imagebuilder_component" "scientific_stack" {
-  name       = "${module.this.id}-scientific-stack-component-${local.dt}"
-  depends_on = [
-    data.local_file.scientific_stack
+  custom_aws_imagebuilder_components = [
+    {
+      name : "base-packages",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/base-packages-component.yaml",
+    },
+    {
+      name : "singularity",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/singularity-component.yaml",
+    },
+    {
+      name : "gnome-desktop",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/gnome-desktop-component.yaml",
+    },
+    {
+      name : "rstudio",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/rstudio-component.yaml",
+    },
+    {
+      name : "docker",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/docker-component.yaml",
+    },
+    {
+      name : "vscode",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/vscode-component.yaml",
+    },
   ]
+}
+
+data "local_file" "custom_components" {
+  count    = length(local.custom_aws_imagebuilder_components)
+  filename = local.custom_aws_imagebuilder_components[count.index].filename
+}
+
+output "custom_components_data" {
+  value = data.local_file.custom_components[*].content
+}
+
+resource "aws_imagebuilder_component" "custom_stacks" {
+  depends_on = [
+    data.local_file.custom_components
+  ]
+  count    = length(data.local_file.custom_components)
+  name     = "${module.this.id}-${local.custom_aws_imagebuilder_components[count.index].name}-${local.dt}"
   platform = "Linux"
   // Version must be in format: major.minor.patch
   #  version  = "1.0.0"
   #  version  = formatdate("YYYY.MM.DD", timestamp())
   version  = local.dt_version
-  data     = data.local_file.scientific_stack.content
+  data     = data.local_file.custom_components[count.index].content
   tags     = module.this.tags
 }
 
 output "scientific_stack" {
-  value = aws_imagebuilder_component.scientific_stack
+  value = aws_imagebuilder_component.custom_stacks
 }
 
 locals {
   components = flatten([
     data.aws_imagebuilder_component.aws_imagebuilder_components[*].arn,
-    aws_imagebuilder_component.scientific_stack.arn,
+    aws_imagebuilder_component.custom_stacks[*].arn,
     var.additional_component_arns,
   ])
 }
@@ -265,7 +302,7 @@ resource "null_resource" "pcluster_build_images" {
   depends_on = [
     data.aws_ami.deeplearning,
     null_resource.make_dirs,
-    aws_imagebuilder_component.scientific_stack,
+    aws_imagebuilder_component.custom_stacks,
     local_file.pcluster_build_configurations,
   ]
 
