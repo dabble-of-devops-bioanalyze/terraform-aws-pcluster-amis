@@ -74,6 +74,9 @@ phases:
               sudo yum install --quiet --skip-broken -y \
                 htop atop tree
 
+              sudu yum install --quiet --skip-broken -y \
+                Lmod
+
               sudo yum install --quiet --skip-broken -y \
                 parallel || echo "Unable to install parallel"
 
