@@ -62,6 +62,8 @@ phases:
               sudo yum update -y; yum upgrade -y
               sudo yum group install -y 'Development Tools'
 
+              sudo yum install -y --quiet --skip-broken texlive-* pandoc
+
               sudo yum install --quiet --skip-broken -y \
                 zlib-devel openssl openssl-devel libxml2-devel xorg-x11-server-Xorg
 
