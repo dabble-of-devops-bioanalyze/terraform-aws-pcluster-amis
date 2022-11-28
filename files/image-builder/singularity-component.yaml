@@ -61,33 +61,24 @@ phases:
               sudo yum update -y; yum upgrade -y
               sudo yum group install -y 'Development Tools'
 
-              sudo yum install --quiet --skip-broken -y \
-                golang \
-                libuuid-devel \
-                libseccomp-devel \
-                squashfs-tools
+              sudo yum install -y fuse3-devel
+              wget http://mirror.centos.org/centos/7/extras/x86_64/Packages/fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
+              sudo yum localinstall -y fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
 
-              sudo yum update -y && \
-                sudo yum groupinstall -y 'Development Tools' && \
-                sudo yum install -y --quiet --skip-broken \
+              sudo yum update -y
+
+              sudo yum install -y --quiet --skip-broken \
                 golang \
                 openssl-devel \
                 libuuid-devel \
                 libseccomp-devel \
                 wget \
-                squashfs-tools
-
-              sudo yum install -y fuse3-devel
-              wget http://mirror.centos.org/centos/7/extras/x86_64/Packages/fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
-              sudo yum localinstall -y fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
-
-              sudo yum install -y --skip-broken \
-                  libseccomp-devel \
-                  squashfs-tools \
-                  squashfuse \
-                  fakeroot \
-                  cryptsetup \
-                  wget git
+                squashfs-tools \
+                libseccomp-devel \
+                squashfuse \
+                fakeroot \
+                cryptsetup \
+                wget git
 
               sudo yum install -y --skip-broken \
                 apptainer
