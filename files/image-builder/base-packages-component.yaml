@@ -76,8 +76,7 @@ phases:
               sudo yum install --quiet --skip-broken -y \
                 htop atop tree
 
-              sudu yum install --quiet --skip-broken -y \
-                Lmod
+              sudu yum install --quiet --skip-broken -y Lmod
 
               sudo yum install --quiet --skip-broken -y \
                 parallel || echo "Unable to install parallel"
@@ -124,14 +123,9 @@ phases:
               fi
 
               ################################################
-              # Install Prometheus Slurm Exporter
+              # Install Lmod
               ################################################
-
-              # fails without sinfo?
-              #cd /tmp
-              #git clone https://github.com/vpenso/prometheus-slurm-exporter.git
-              #cd prometheus-slurm-exporter
-              #sudo make
+              sudu yum install --skip-broken -y Lmod
 
   - name: validate
     steps:
