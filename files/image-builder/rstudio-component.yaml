@@ -73,6 +73,8 @@ phases:
               Rscript -e "install.packages(c('tidyverse'), repos='https://cran.rstudio.com')"
               Rscript -e "install.packages(c('arrow'), repos='https://cran.rstudio.com')"
               Rscript -e "install.packages(c('XML'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('languageserver'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('devtools'), repos='https://cran.rstudio.com')"
               Rscript -e "BiocManager::install()"
 
               ################################################
