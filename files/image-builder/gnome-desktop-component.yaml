@@ -55,11 +55,16 @@ phases:
 
               # Install packages
               echo "Installing GNOME desktop"
+
               sudo amazon-linux-extras install -y \
                 epel mate-desktop1.x
+
               sudo yum-config-manager --enable epel
               sudo yum update -y; yum upgrade -y
               sudo yum groupinstall -y "GNOME Desktop" "Graphical Administration Tools"
+
+              sudo yum install --quiet --skip-broken -y \
+                novnc python-websockify numpy
 
   - name: validate
     steps:
