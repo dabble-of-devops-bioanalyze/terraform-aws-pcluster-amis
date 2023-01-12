@@ -66,6 +66,8 @@ phases:
               sudo yum install --quiet --skip-broken -y \
                 novnc python-websockify numpy
 
+              sudo npm install -g novnc/novnc
+
   - name: validate
     steps:
       - name: ValidateGnomeDesktop

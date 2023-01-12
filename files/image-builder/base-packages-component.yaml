@@ -74,7 +74,6 @@ phases:
               sudo yum install --quiet --skip-broken -y \
                 sudo supervisor python3-devel python3 amazon-efs-utils quota vsftpd
 
-
               sudo yum install --quiet --skip-broken -y \
                 htop atop tree
 
