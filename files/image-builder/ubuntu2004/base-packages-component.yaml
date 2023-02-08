@@ -62,6 +62,13 @@ phases:
               apt-get install -y \
                 default-jdk
 
+              apt -y update
+
+              apt -y install tcsh make \
+                             gcc gfortran \
+                             flex bison patch bc wget \
+                             xorg-dev libz-dev libbz2-dev
+
               apt update -y
               apt install -y software-properties-common
               add-apt-repository --yes --update ppa:ansible/ansible
