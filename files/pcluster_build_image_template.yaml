@@ -1,0 +1,41 @@
+Build:
+  ParentImage: ${ami_id}
+  InstanceType: ${instance_type}
+  SubnetId: ${subnet_id}
+  Components:
+  %{ for key in keys(components) ~}
+  - Type: arn
+    Value: ${components[key]}
+  %{ endfor }
+  Tags:
+  %{ for key in keys(tags) ~}
+  - Key: ${key}
+    Value: ${tags[key]}
+  %{ endfor }
+
+  Build:
+    ParentImage: "AMI_ID"
+    InstanceType: t3a.medium
+    SubnetId: subnet-35771e1b
+    Components:
+      - Type: arn
+      Value: arn:aws:imagebuilder:us-east-1:aws:component/python-3-linux/1.0.1/1
+               - Type: arn
+      Value: arn:aws:imagebuilder:us-east-1:aws:component/amazon-cloudwatch-agent-linux/1.0.1/1
+               - Type: arn
+      Value: arn:aws:imagebuilder:us-east-1:aws:component/aws-cli-version-2-linux/1.0.3/1
+               - Type: arn
+      Value: arn:aws:imagebuilder:us-east-1:018835827632:component/eg-ue2-test-example-scientific-stack-component/1.0.0/1
+
+
+    Tags:
+      - Key: Environment
+      Value: ue2
+               - Key: Name
+      Value: eg-ue2-test-example
+               - Key: Namespace
+      Value: eg
+               - Key: Stage
+      Value: test
+
+

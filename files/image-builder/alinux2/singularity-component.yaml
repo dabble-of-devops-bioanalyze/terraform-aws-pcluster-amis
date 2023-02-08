@@ -49,26 +49,42 @@ phases:
               # TODO
               # Only supporting AWS Linux 2 based amis at this time
 
-              export TASK="Singularity"
-              echo "===================================================="
-              echo "# Starting: ${TASK}"
-              echo "===================================================="
+              ################################################
+              # Install Singularity / Apptainer
+              # https://github.com/apptainer/apptainer
+              ################################################
 
-              apt-get install -y \
-                build-essential \
-                libssl-dev \
-                uuid-dev \
-                libgpgme11-dev \
-                squashfs-tools \
-                libseccomp-dev \
+              # Install packages
+              echo "Installing system packages"
+              sudo amazon-linux-extras install -y epel
+              sudo yum-config-manager --enable epel
+              sudo yum update -y; yum upgrade -y
+              sudo yum group install -y 'Development Tools'
+
+              sudo yum install -y fuse3-devel
+              wget http://mirror.centos.org/centos/7/extras/x86_64/Packages/fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
+              sudo yum localinstall -y fuse-overlayfs-0.7.2-6.el7_8.x86_64.rpm
+
+              sudo yum update -y
+
+              sudo yum install -y --quiet --skip-broken \
+                golang \
+                openssl-devel \
+                libuuid-devel \
+                libseccomp-devel \
                 wget \
-                pkg-config \
-                git
+                squashfs-tools \
+                libseccomp-devel \
+                squashfuse \
+                fakeroot \
+                cryptsetup \
+                wget git
 
-              wget -O- http://neuro.debian.net/lists/focal.us-nh.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
-              apt-key adv --recv-keys --keyserver hkps://keyserver.ubuntu.com 0xA5D32F012649A5A9
-              apt-get update -y
-              apt-get install -y singularity-container
+              sudo yum install -y --skip-broken \
+                apptainer
+
+              sudo yum install -y singularity \
+                  singularity-runtime || echo "Unable to install singularity"
 
   - name: validate
     steps:

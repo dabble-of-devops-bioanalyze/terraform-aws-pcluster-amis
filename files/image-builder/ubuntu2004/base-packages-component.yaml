@@ -108,117 +108,117 @@ phases:
               apt install -y nodejs || echo "Unable to install nodejs"
               npm install -g configurable-http-proxy
 
-      - name: validate
-        steps:
-          - name: ValidateLmod
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  FILE="/usr/share/lmod/lmod/init/bash"
-                  if [ -f "$FILE" ]; then
-                      echo "$FILE exists."
-                  else
-                      echo "$FILE does not exist."
-                  fi
-          - name: ValidateAria2
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P aria2c &>/dev/null; then
-                      echo "The aria2c command exists."
-                  else
-                      echo "The aria2c command does not exist. Failing."
-                      exit 1
-                  fi
-          - name: ValidateHtop
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P htop &>/dev/null; then
-                      echo "The htop command exists."
-                  else
-                      echo "The htop command does not exist. Failing."
-                      exit 1
-                  fi
-          - name: ValidateTree
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P tree &>/dev/null; then
-                      echo "The tree command exists."
-                  else
-                      echo "The tree command does not exist. Failing."
-                      exit 1
-                  fi
-          - name: ValidateAnsible
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P ansible-galaxy &>/dev/null; then
-                      echo "The ansible-galaxy command exists."
-                  else
-                      echo "The ansible-galaxy command does not exist. Failing."
-                      exit 1
-                  fi
+  - name: validate
+    steps:
+      - name: ValidateLmod
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              FILE="/usr/share/lmod/lmod/init/bash"
+              if [ -f "$FILE" ]; then
+                  echo "$FILE exists."
+              else
+                  echo "$FILE does not exist."
+              fi
+      - name: ValidateAria2
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P aria2c &>/dev/null; then
+                  echo "The aria2c command exists."
+              else
+                  echo "The aria2c command does not exist. Failing."
+                  exit 1
+              fi
+      - name: ValidateHtop
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P htop &>/dev/null; then
+                  echo "The htop command exists."
+              else
+                  echo "The htop command does not exist. Failing."
+                  exit 1
+              fi
+      - name: ValidateTree
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P tree &>/dev/null; then
+                  echo "The tree command exists."
+              else
+                  echo "The tree command does not exist. Failing."
+                  exit 1
+              fi
+      - name: ValidateAnsible
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P ansible-galaxy &>/dev/null; then
+                  echo "The ansible-galaxy command exists."
+              else
+                  echo "The ansible-galaxy command does not exist. Failing."
+                  exit 1
+              fi
 
-                  ansible-galaxy --version
-                  if [[ $? == 0 ]]; then
-                      echo "ansible-galaxy was successfully invoked."
-                  else
-                      echo "ansible-galaxy could not be invoked. Failing."
-                      exit 1
-                  fi
-          - name: ValidateNodejs
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P node &>/dev/null; then
-                      echo "The node command exists."
-                  else
-                      echo "The node command does not exist. Failing."
-                      exit 1
-                  fi
+              ansible-galaxy --version
+              if [[ $? == 0 ]]; then
+                  echo "ansible-galaxy was successfully invoked."
+              else
+                  echo "ansible-galaxy could not be invoked. Failing."
+                  exit 1
+              fi
+      - name: ValidateNodejs
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P node &>/dev/null; then
+                  echo "The node command exists."
+              else
+                  echo "The node command does not exist. Failing."
+                  exit 1
+              fi
 
-                  node --version
-                  if [[ $? == 0 ]]; then
-                      echo "node was successfully invoked."
-                  else
-                      echo "node could not be invoked. Failing."
-                      exit 1
-                  fi
-          - name: ConfigurableHttpProxy
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P configurable-http-proxy &>/dev/null; then
-                      echo "The configurable-http-proxy command exists."
-                  else
-                      echo "The configurable-http-proxy command does not exist. Failing."
-                      exit 1
-                  fi
+              node --version
+              if [[ $? == 0 ]]; then
+                  echo "node was successfully invoked."
+              else
+                  echo "node could not be invoked. Failing."
+                  exit 1
+              fi
+      - name: ConfigurableHttpProxy
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P configurable-http-proxy &>/dev/null; then
+                  echo "The configurable-http-proxy command exists."
+              else
+                  echo "The configurable-http-proxy command does not exist. Failing."
+                  exit 1
+              fi
 
-                  configurable-http-proxy --version
-                  if [[ $? == 0 ]]; then
-                      echo "configurable-http-proxy was successfully invoked."
-                  else
-                      echo "configurable-http-proxy could not be invoked. Failing."
-                      exit 1
-                  fi
-          - name: ValidateJava
-            action: ExecuteBash
-            inputs:
-              commands:
-                - |
-                  if type -P java &>/dev/null; then
-                      echo "The java command exists."
-                  else
-                      echo "The java command does not exist. Failing."
-                      exit 1
-                  fi
+              configurable-http-proxy --version
+              if [[ $? == 0 ]]; then
+                  echo "configurable-http-proxy was successfully invoked."
+              else
+                  echo "configurable-http-proxy could not be invoked. Failing."
+                  exit 1
+              fi
+      - name: ValidateJava
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P java &>/dev/null; then
+                  echo "The java command exists."
+              else
+                  echo "The java command does not exist. Failing."
+                  exit 1
+              fi
