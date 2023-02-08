@@ -32,6 +32,7 @@ variable "instance_type" {
   default = "t3a.large"
 }
 
+
 variable "os" {
   description = "Operating system. Must be one of 'alinux2' or 'ubuntu2004'."
   default     = "ubuntu2004"
