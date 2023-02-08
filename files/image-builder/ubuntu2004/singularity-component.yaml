@@ -83,10 +83,3 @@ phases:
                   echo "The singularity command does not exist. Failing."
                   exit 1
               fi
-
-              if type -P apptainer &>/dev/null; then
-                  echo "The apptainer command exists."
-              else
-                  echo "The apptainer command does not exist. Failing."
-                  exit 1
-              fi
