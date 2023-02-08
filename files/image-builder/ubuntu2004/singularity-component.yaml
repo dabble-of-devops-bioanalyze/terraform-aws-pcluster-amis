@@ -17,6 +17,7 @@ name: Singularity
 description: |
   Installs singularity
 
+
 schemaVersion: 1.0
 phases:
   - name: build
