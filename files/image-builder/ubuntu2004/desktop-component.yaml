@@ -78,7 +78,7 @@ phases:
                 ubuntu-mate-desktop^
 
               env DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                ubuntu-gnome-desktop gnome-session gdm3
+                ubuntu-gnome-desktop ubuntu-desktop gnome-session gdm3
 
               env DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 xfce4

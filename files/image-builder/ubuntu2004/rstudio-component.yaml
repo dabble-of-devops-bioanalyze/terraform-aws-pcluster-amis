@@ -46,6 +46,8 @@ phases:
           commands:
             - |
               RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+
+              export DEBIAN_FRONTEND=noninteractive
               ################################################
               # Install RStudio
               ################################################

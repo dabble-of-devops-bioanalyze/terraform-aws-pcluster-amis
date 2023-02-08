@@ -47,6 +47,7 @@ phases:
             - |
               RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
 
+              export DEBIAN_FRONTEND=noninteractive
               export TASK="VSCode"
               echo "===================================================="
               echo "# Starting: ${TASK}"

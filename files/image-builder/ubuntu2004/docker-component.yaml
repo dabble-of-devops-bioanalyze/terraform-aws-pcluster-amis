@@ -46,8 +46,7 @@ phases:
           commands:
             - |
               RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
-              # TODO
-              # Only supporting AWS Linux 2 based amis at this time
+              export DEBIAN_FRONTEND=noninteractive
 
               ################################################
               # Install Docker

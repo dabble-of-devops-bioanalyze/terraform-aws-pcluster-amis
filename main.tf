@@ -10,7 +10,6 @@ locals {
 locals {
   ami_name     = var.ami_name != "" ? var.ami_name : title(join(" ", split("-", module.this.id, )))
   #  owner    = var.os == "alinux2" ? "amazon" : "ubuntu"
-  owner        = "amazon"
   replace_orig = "(Ubuntu 20.04)"
   replace_with = "ubuntu2004"
 }
@@ -22,12 +21,12 @@ output "ami_name" {
 data "aws_ami" "deeplearning" {
   count       = length(var.deep_learning_amis)
   most_recent = true
-  owners      = ["${local.owner}"]
+  owners      = [var.ami_owner]
 
-  filter {
-    name   = "owner-alias"
-    values = ["${local.owner}"]
-  }
+  #  filter {
+  #    name   = "owner-alias"
+  #    values = [var.ami_owner]
+  #  }
 
   filter {
     name   = "name"
