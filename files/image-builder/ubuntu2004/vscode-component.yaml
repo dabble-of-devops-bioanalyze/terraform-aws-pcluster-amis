@@ -46,16 +46,15 @@ phases:
           commands:
             - |
               RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
-              # TODO
-              # Only supporting AWS Linux 2 based amis at this time
 
-              ################################################
-              # Install VSCode
-              ################################################
-              echo "Installing vscode"
-              sudo wget https://code-server.dev/install.sh
-              export HOME=/root
-              bash ./install.sh || echo "Unable to install vscode"
+              export TASK="VSCode"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+              add-apt-repository -y "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+              apt-get update -y
+              apt install -y code
 
   - name: validate
     steps:

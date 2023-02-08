@@ -46,22 +46,44 @@ phases:
           commands:
             - |
               RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
-              # TODO
-              # Only supporting AWS Linux 2 based amis at this time
 
               ################################################
               # Install Packages
               ################################################
 
-              # Install packages
-              echo "Installing GNOME desktop"
+              export TASK="Desktop"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                dbus-x11 \
+                procps \
+                psmisc
 
-              sudo amazon-linux-extras install -y \
-                epel mate-desktop1.x
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                xdg-utils \
+                xdg-user-dirs \
+                menu-xdg \
+                mime-support \
+                desktop-file-utils \
+                bash-completion
 
-              sudo yum-config-manager --enable epel
-              sudo yum update -y; yum upgrade -y
-              sudo yum groupinstall -y "GNOME Desktop" "Graphical Administration Tools"
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                mesa-utils-extra \
+                libxv1 \
+                sudo \
+                lsb-release
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                ubuntu-mate-desktop^
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                ubuntu-gnome-desktop gnome-session gdm3
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                xfce4
+
+
 
 
   - name: validate

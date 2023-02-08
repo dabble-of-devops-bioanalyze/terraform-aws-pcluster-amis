@@ -8,9 +8,11 @@ locals {
 }
 
 locals {
-  ami_name = var.ami_name != "" ? var.ami_name : title(join(" ", split("-", module.this.id, )))
+  ami_name     = var.ami_name != "" ? var.ami_name : title(join(" ", split("-", module.this.id, )))
   #  owner    = var.os == "alinux2" ? "amazon" : "ubuntu"
-  owner    = "amazon"
+  owner        = "amazon"
+  replace_orig = "(Ubuntu 20.04)"
+  replace_with = "ubuntu2004"
 }
 
 output "ami_name" {
@@ -157,7 +159,7 @@ locals {
   pcluster_ami_long_ids                            = flatten([
   # the ami id already gets the date time attached
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
-  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
+  for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], local.replace_orig, local.replace_with), " ", "-") ,".", "-") )}")
   ])
   # keep running into issues where this is too long
   pcluster_ami_ids                                 = flatten([
@@ -168,7 +170,8 @@ locals {
   for i in range(length(local.ami_ids)) : trimspace("pcluster-${replace(var.pcluster_version, ".", "-")}-${random_string.amis[i].id}-${local.dt_day}")
   ])
   pcluster_ami_names                               = flatten([
-  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
+  #  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
+  for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), local.replace_orig, local.replace_with)
   ])
   pcluster_ami_build_config_files                  = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster_build-${local.pcluster_ami_ids[i]}.yaml"
@@ -198,7 +201,7 @@ locals {
       Tags : [
         {
           Key : "Name",
-          Value : replace(local.pcluster_ami_names[i], "(Amazon Linux 2)", "Amazon Linux 2" )
+          Value : replace(local.pcluster_ami_names[i], local.replace_orig, local.replace_with )
         },
         {
           Key : "Version",
@@ -214,7 +217,7 @@ locals {
         },
         {
           Key : "ParentAmiName",
-          Value : replace(local.ami_names[i], "(Amazon Linux 2)", "Amazon Linux 2")
+          Value : replace(local.ami_names[i], local.replace_orig, local.replace_with)
         },
       ]
     },
@@ -227,7 +230,7 @@ locals {
       Tags : flatten([
         [for key in keys(module.this.tags) : { Key : key, Value : module.this.tags[key] }], [
           { Key : "ParentAmiId", Value : local.ami_ids[i] },
-          { Key : "ParentAmiName", Value : replace(local.ami_names[i], "(Amazon Linux 2)", "Amazon Linux 2") }
+          { Key : "ParentAmiName", Value : replace(local.ami_names[i], local.replace_orig, local.replace_with) }
         ]
       ])
     },
