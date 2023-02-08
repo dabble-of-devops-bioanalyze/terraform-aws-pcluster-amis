@@ -1,0 +1,128 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+name: RStudio
+description: |
+  RStudio
+
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: Fail
+        action: ExecuteBash
+        inputs:
+          commands:
+            - echo 1
+      - name: OperatingSystemRelease
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              FILE=/etc/os-release
+              if [ -e $FILE ]; then
+                . $FILE
+                echo "$ID${VERSION_ID:+.${VERSION_ID}}"
+              else
+                echo "The file $FILE does not exist. Failing build."
+                exit {{ build.Fail.outputs.stdout }}
+              fi
+
+      - name: InstallationRequirements
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+              # TODO
+              # Only supporting AWS Linux 2 based amis at this time
+
+              ################################################
+              # Install RStudio
+              ################################################
+
+              export TASK="R"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+
+              wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | sudo tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+              # add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
+              add-apt-repository -y "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+              add-apt-repository -y ppa:c2d4u.team/c2d4u4.0+
+              apt-get update -y
+              apt install --no-install-recommends -y r-base
+              apt install -y --no-install-recommends r-cran-rstan
+              apt install -y --no-install-recommends r-cran-tidyverse
+
+              export TASK="RStudio"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              FILE="rstudio-2022.12.0-353-amd64.deb"
+              if [ -f "$FILE" ]; then
+                echo "$FILE exists."
+              else
+                wget https://download1.rstudio.org/electron/bionic/amd64/rstudio-2022.12.0-353-amd64.deb
+              fi
+
+              apt install -y ./rstudio-2022.12.0-353-amd64.deb
+              sudo systemctl daemon-reload
+              sudo rstudio-server stop || echo "Unable to stop rstudio server"
+
+              ################################################
+              # Install Shiny Server
+              ################################################
+                            ################################################
+              # Install Shiny Server
+              ################################################
+              Rscript -e "install.packages(c('shiny'), repos='https://cran.rstudio.com')"
+              apt-get install -y gdebi-core
+              wget https://download3.rstudio.org/ubuntu-18.04/x86_64/shiny-server-1.5.20.1002-amd64.deb
+              apt install -y shiny-server-1.5.20.1002-amd64.deb
+
+              ################################################
+              # Install R packages
+              ################################################
+              Rscript -e "install.packages(c('BiocManager'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('tidyverse'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('arrow'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('XML'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('languageserver'), repos='https://cran.rstudio.com')"
+              Rscript -e "install.packages(c('devtools'), repos='https://cran.rstudio.com')"
+              Rscript -e "BiocManager::install()"
+
+
+  - name: validate
+    steps:
+      - name: ValidateR
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P R &>/dev/null; then
+                  echo "The R command exists."
+              else
+                  echo "The R command does not exist. Failing."
+                  exit 1
+              fi
+
+              R --version
+              if [[ $? == 0 ]]; then
+                  echo "R was successfully invoked."
+              else
+                  echo "R could not be invoked. Failing."
+                  exit 1
+              fi

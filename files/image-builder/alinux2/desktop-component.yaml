@@ -1,0 +1,99 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+name: Desktop
+description: |
+  Installs Desktop for DCV
+
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: Fail
+        action: ExecuteBash
+        inputs:
+          commands:
+            - echo 1
+      - name: OperatingSystemRelease
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              FILE=/etc/os-release
+              if [ -e $FILE ]; then
+                . $FILE
+                echo "$ID${VERSION_ID:+.${VERSION_ID}}"
+              else
+                echo "The file $FILE does not exist. Failing build."
+                exit {{ build.Fail.outputs.stdout }}
+              fi
+
+      - name: InstallationRequirements
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+
+              ################################################
+              # Install Packages
+              ################################################
+
+              export TASK="Desktop"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                dbus-x11 \
+                procps \
+                psmisc
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                xdg-utils \
+                xdg-user-dirs \
+                menu-xdg \
+                mime-support \
+                desktop-file-utils \
+                bash-completion
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                mesa-utils-extra \
+                libxv1 \
+                sudo \
+                lsb-release
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                ubuntu-mate-desktop^
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                gnome-session gdm3
+
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                xfce4
+
+
+  - name: validate
+    steps:
+      - name: ValidateGnomeDesktop
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P gnome-session &>/dev/null; then
+                  echo "The gnome-session command exists."
+              else
+                  echo "The gnome-session command does not exist. Failing."
+                  exit 1
+              fi

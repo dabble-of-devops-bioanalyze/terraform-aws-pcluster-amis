@@ -9,39 +9,22 @@ locals {
 
 locals {
   ami_name = var.ami_name != "" ? var.ami_name : title(join(" ", split("-", module.this.id, )))
+  #  owner    = var.os == "alinux2" ? "amazon" : "ubuntu"
+  owner    = "amazon"
 }
 
 output "ami_name" {
   value = local.ami_name
 }
 
-data "aws_ami" "pcluster" {
-  most_recent = true
-  owners      = ["247102896272"]
-
-  filter {
-    name   = "name"
-    values = ["aws-parallelcluster-${var.pcluster_version}-amzn2-hvm-x86_64*"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-}
-
-output "aws_ami_pcluster" {
-  value = data.aws_ami.pcluster
-}
-
 data "aws_ami" "deeplearning" {
   count       = length(var.deep_learning_amis)
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["${local.owner}"]
 
   filter {
     name   = "owner-alias"
-    values = ["amazon"]
+    values = ["${local.owner}"]
   }
 
   filter {
@@ -85,32 +68,37 @@ locals {
     {
       name : "base-packages",
       version : local.dt_version,
-      filename : "${path.module}/files/image-builder/base-packages-component.yaml",
+      filename : "${path.module}/files/image-builder/${var.os}/base-packages-component.yaml",
     },
     {
       name : "singularity",
       version : local.dt_version,
-      filename : "${path.module}/files/image-builder/singularity-component.yaml",
+      filename : "${path.module}/files/image-builder/${var.os}/singularity-component.yaml",
     },
     {
-      name : "gnome-desktop",
+      name : "desktop",
       version : local.dt_version,
-      filename : "${path.module}/files/image-builder/gnome-desktop-component.yaml",
+      filename : "${path.module}/files/image-builder/${var.os}/desktop-component.yaml",
     },
     {
       name : "rstudio",
       version : local.dt_version,
-      filename : "${path.module}/files/image-builder/rstudio-component.yaml",
+      filename : "${path.module}/files/image-builder/${var.os}/rstudio-component.yaml",
     },
     {
       name : "docker",
       version : local.dt_version,
-      filename : "${path.module}/files/image-builder/docker-component.yaml",
+      filename : "${path.module}/files/image-builder/${var.os}/docker-component.yaml",
     },
     {
       name : "vscode",
       version : local.dt_version,
-      filename : "${path.module}/files/image-builder/vscode-component.yaml",
+      filename : "${path.module}/files/image-builder/${var.os}/vscode-component.yaml",
+    },
+    {
+      name : "open-demand-hpc",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/${var.os}/open-demand-hpc-component.yaml",
     },
   ]
 }
@@ -128,15 +116,15 @@ resource "aws_imagebuilder_component" "custom_stacks" {
   depends_on = [
     data.local_file.custom_components
   ]
-  count    = length(data.local_file.custom_components)
-  name     = "${module.this.id}-${local.custom_aws_imagebuilder_components[count.index].name}-${local.dt}"
-  platform = "Linux"
+  count      = length(data.local_file.custom_components)
+  name       = "${module.this.id}-${local.custom_aws_imagebuilder_components[count.index].name}-${local.dt}"
+  platform   = "Linux"
   // Version must be in format: major.minor.patch
   #  version  = "1.0.0"
   #  version  = formatdate("YYYY.MM.DD", timestamp())
-  version  = local.dt_version
-  data     = data.local_file.custom_components[count.index].content
-  tags     = module.this.tags
+  version    = local.dt_version
+  data       = data.local_file.custom_components[count.index].content
+  tags       = module.this.tags
 }
 
 output "scientific_stack" {
@@ -164,34 +152,34 @@ resource "random_string" "amis" {
 }
 
 locals {
-  ami_ids               = flatten(data.aws_ami.deeplearning[*].image_id)
-  ami_names             = flatten(data.aws_ami.deeplearning[*].name)
-  pcluster_ami_long_ids = flatten([
+  ami_ids                                          = flatten(data.aws_ami.deeplearning[*].image_id)
+  ami_names                                        = flatten(data.aws_ami.deeplearning[*].name)
+  pcluster_ami_long_ids                            = flatten([
   # the ami id already gets the date time attached
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
   for i in range(length(local.ami_ids)) : trimspace("${module.this.id}-${local.dt_day}-pcluster-${replace(var.pcluster_version, ".", "-")}--${lower(replace(replace(replace(local.ami_names[i], "(Amazon Linux 2)", "alinux2"), " ", "-") ,".", "-") )}")
   ])
   # keep running into issues where this is too long
-  pcluster_ami_ids = flatten([
+  pcluster_ami_ids                                 = flatten([
   # the ami id already gets the date time attached
   # The value supplied for parameter 'name' is not valid. name must match pattern ^[-_A-Za-z-0-9][-_A-Za-z0-9 ]{1,126}[-_A-Za-z-0-9]$
   # make sure we are using a name pattern that is allowed
   # The 'Name' tag has the full name
   for i in range(length(local.ami_ids)) : trimspace("pcluster-${replace(var.pcluster_version, ".", "-")}-${random_string.amis[i].id}-${local.dt_day}")
   ])
-  pcluster_ami_names = flatten([
+  pcluster_ami_names                               = flatten([
   for i in range(length(local.ami_ids)) : replace(trimspace("${local.ami_name} PCluster ${var.pcluster_version} ${local.ami_names[i]}"), "(Amazon Linux 2)", "Amazon Linux 2")
   ])
-  pcluster_ami_build_config_files = flatten([
+  pcluster_ami_build_config_files                  = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster_build-${local.pcluster_ami_ids[i]}.yaml"
   ])
   pcluster_ami_build_cloudformation_template_files = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
   ])
-  pcluster_ami_build_cloudformation_status_files = flatten([
+  pcluster_ami_build_cloudformation_status_files   = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/cloudformation-${local.pcluster_ami_ids[i]}.json"
   ])
-  pcluster_ami_build_pcluster_describe_files = flatten([
+  pcluster_ami_build_pcluster_describe_files       = flatten([
   for i in range(length(local.ami_ids)) : "files/pcluster-v${var.pcluster_version}/pcluster-ami-${local.pcluster_ami_ids[i]}.json"
   ])
 
@@ -248,7 +236,7 @@ locals {
 }
 
 locals {
-  make_dirs_command = flatten([
+  make_dirs_command      = flatten([
   for i in range(length(local.pcluster_image_build_template)) :
   <<EOF
 mkdir -p files/pcluster-v${var.pcluster_version}
@@ -283,7 +271,7 @@ resource "null_resource" "make_dirs" {
   count      = length(local.pcluster_image_build_template)
   depends_on = [
   ]
-  triggers = local.triggers
+  triggers   = local.triggers
   provisioner "local-exec" {
     command = local.make_dirs_command[count.index]
   }
@@ -342,8 +330,8 @@ data "local_file" "pcluster_amis" {
     local_file.pcluster_build_configurations,
     null_resource.pcluster_wait,
   ]
-  count    = length(local.pcluster_image_build_template)
-  filename = local.pcluster_ami_build_pcluster_describe_files[count.index]
+  count      = length(local.pcluster_image_build_template)
+  filename   = local.pcluster_ami_build_pcluster_describe_files[count.index]
 }
 
 locals {

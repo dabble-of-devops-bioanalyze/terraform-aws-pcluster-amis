@@ -1,0 +1,224 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+name: Base Packages
+description: |
+  Base system packages such as epel, htop, tree, etc
+
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: Fail
+        action: ExecuteBash
+        inputs:
+          commands:
+            - echo 1
+      - name: OperatingSystemRelease
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              FILE=/etc/os-release
+              if [ -e $FILE ]; then
+                . $FILE
+                echo "$ID${VERSION_ID:+.${VERSION_ID}}"
+              else
+                echo "The file $FILE does not exist. Failing build."
+                exit {{ build.Fail.outputs.stdout }}
+              fi
+
+      - name: InstallationRequirements
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+
+              ################################################
+              # Install Packages
+              ################################################
+
+              export TASK="System"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              apt-add-repository -y universe
+              apt-get update -y
+              apt-get install -y \
+                default-jdk
+
+              apt update -y
+              apt install -y software-properties-common
+              add-apt-repository --yes --update ppa:ansible/ansible
+              apt install -y ansible
+              ansible-galaxy install evandam.conda
+
+              apt-get install -y \
+                software-properties-common \
+                apt-transport-https \
+                wget \
+                lmod \
+                tasksel \
+                zlib1g-dev \
+                lsof \
+                git \
+                htop \
+                tree \
+                build-essential
+
+              apt install -y aria2
+              apt install -y --no-install-recommends software-properties-common dirmngr
+              npm install -g configurable-http-proxy vtop
+
+              ################################################
+              # Install YQ
+              ################################################
+
+              if [[ $(uname -m) == "aarch64" ]];then
+                wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_arm64
+              else
+                wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64
+              fi
+
+              export TASK="Nodejs"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+
+              FILE="nodesource_deb_setup.sh"
+              if [ -f "$FILE" ]; then
+                echo "$FILE exists."
+              else
+                curl -sL https://deb.nodesource.com/setup_14.x -o ./nodesource_deb_setup.sh
+              fi
+              bash ./nodesource_deb_setup.sh
+              apt install -y nodejs || echo "Unable to install nodejs"
+              npm install -g configurable-http-proxy
+
+      - name: validate
+        steps:
+          - name: ValidateLmod
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  FILE="/usr/share/lmod/lmod/init/bash"
+                  if [ -f "$FILE" ]; then
+                      echo "$FILE exists."
+                  else
+                      echo "$FILE does not exist."
+                  fi
+          - name: ValidateAria2
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P aria2c &>/dev/null; then
+                      echo "The aria2c command exists."
+                  else
+                      echo "The aria2c command does not exist. Failing."
+                      exit 1
+                  fi
+          - name: ValidateHtop
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P htop &>/dev/null; then
+                      echo "The htop command exists."
+                  else
+                      echo "The htop command does not exist. Failing."
+                      exit 1
+                  fi
+          - name: ValidateTree
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P tree &>/dev/null; then
+                      echo "The tree command exists."
+                  else
+                      echo "The tree command does not exist. Failing."
+                      exit 1
+                  fi
+          - name: ValidateAnsible
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P ansible-galaxy &>/dev/null; then
+                      echo "The ansible-galaxy command exists."
+                  else
+                      echo "The ansible-galaxy command does not exist. Failing."
+                      exit 1
+                  fi
+
+                  ansible-galaxy --version
+                  if [[ $? == 0 ]]; then
+                      echo "ansible-galaxy was successfully invoked."
+                  else
+                      echo "ansible-galaxy could not be invoked. Failing."
+                      exit 1
+                  fi
+          - name: ValidateNodejs
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P node &>/dev/null; then
+                      echo "The node command exists."
+                  else
+                      echo "The node command does not exist. Failing."
+                      exit 1
+                  fi
+
+                  node --version
+                  if [[ $? == 0 ]]; then
+                      echo "node was successfully invoked."
+                  else
+                      echo "node could not be invoked. Failing."
+                      exit 1
+                  fi
+          - name: ConfigurableHttpProxy
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P configurable-http-proxy &>/dev/null; then
+                      echo "The configurable-http-proxy command exists."
+                  else
+                      echo "The configurable-http-proxy command does not exist. Failing."
+                      exit 1
+                  fi
+
+                  configurable-http-proxy --version
+                  if [[ $? == 0 ]]; then
+                      echo "configurable-http-proxy was successfully invoked."
+                  else
+                      echo "configurable-http-proxy could not be invoked. Failing."
+                      exit 1
+                  fi
+          - name: ValidateJava
+            action: ExecuteBash
+            inputs:
+              commands:
+                - |
+                  if type -P java &>/dev/null; then
+                      echo "The java command exists."
+                  else
+                      echo "The java command does not exist. Failing."
+                      exit 1
+                  fi

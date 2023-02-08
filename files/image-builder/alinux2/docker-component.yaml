@@ -1,0 +1,98 @@
+# Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+name: Docker
+description: |
+  Installs docker and docker-compose
+
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: Fail
+        action: ExecuteBash
+        inputs:
+          commands:
+            - echo 1
+      - name: OperatingSystemRelease
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              FILE=/etc/os-release
+              if [ -e $FILE ]; then
+                . $FILE
+                echo "$ID${VERSION_ID:+.${VERSION_ID}}"
+              else
+                echo "The file $FILE does not exist. Failing build."
+                exit {{ build.Fail.outputs.stdout }}
+              fi
+
+      - name: InstallationRequirements
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              RELEASE='{{ build.OperatingSystemRelease.outputs.stdout }}'
+
+              ################################################
+              # Install Docker
+              ################################################
+              echo "Installing docker"
+              apt-get install \
+                ca-certificates \
+                curl \
+                gnupg \
+                lsb-release
+
+              mkdir -p /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+              echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+                $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+              apt-get -y update
+              chmod a+r /etc/apt/keyrings/docker.gpg
+              apt-get update
+
+              apt-get install -y \
+                docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+              sudo service docker start
+              sudo groupmod -g 500 docker
+              sudo systemctl enable --now docker
+
+  - name: validate
+    steps:
+      - name: ValidateDocker
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              if type -P docker &>/dev/null; then
+                  echo "The docker command exists."
+              else
+                  echo "The docker command does not exist. Failing."
+                  exit 1
+              fi
+
+              docker --version
+              if [[ $? == 0 ]]; then
+                  echo "docker was successfully invoked."
+              else
+                  echo "docker could not be invoked. Failing."
+                  exit 1
+              fi

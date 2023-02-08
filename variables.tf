@@ -29,15 +29,35 @@ variable "ami_id" {
 
 variable "instance_type" {
   type    = string
-  default = "t3a.medium"
+  default = "t3a.large"
+}
+
+variable "os" {
+  description = "Operating system. Must be one of 'alinux2' or 'ubuntu2004'."
+  default     = "ubuntu2004"
 }
 
 #TODO change this to map of name/value
 variable "deep_learning_amis" {
   description = "List of DeepLearning AMIs to build additional pcluster images."
+  type        = list(string)
+  default     = [
+    "Deep Learning AMI GPU PyTorch 1* (Ubuntu 20.04) *"
+  ]
+}
+
+variable "deep_learning_amis_alinux2" {
+  description = "List of alinux2 DeepLearning AMIs to build additional pcluster images."
   default     = [
     "Deep Learning AMI (Amazon Linux 2) Version 61*",
-    "Deep Learning AMI GPU PyTorch 1* (Amazon Linux 2) 2022*",
+    "Deep Learning AMI GPU PyTorch 1* (Amazon Linux 2) *",
+  ]
+}
+
+variable "deep_learning_amis_ubuntu2004" {
+  description = "List of ubuntu DeepLearning AMIs to build additional pcluster images."
+  default     = [
+    "Deep Learning AMI GPU PyTorch 1* (Ubuntu 20.04) *"
   ]
 }
 
