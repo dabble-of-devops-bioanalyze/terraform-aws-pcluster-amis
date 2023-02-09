@@ -74,12 +74,24 @@ phases:
                 sudo \
                 lsb-release
 
+              export TASK="Desktop: Mate"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
               env DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 ubuntu-mate-desktop^
 
+              export TASK="Desktop: xfce4"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
               env DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 xfce4
 
+              export TASK="Desktop: Gnome Ubuntu"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
               env DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 ubuntu-gnome-desktop ubuntu-desktop gnome-session gdm3
 

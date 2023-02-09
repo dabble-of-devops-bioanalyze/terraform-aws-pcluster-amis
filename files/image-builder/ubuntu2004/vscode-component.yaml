@@ -64,9 +64,9 @@ phases:
         inputs:
           commands:
             - |
-              if type -P code-server &>/dev/null; then
-                  echo "The code-server command exists."
+              if type -P code &>/dev/null; then
+                  echo "The code command exists."
               else
-                  echo "The code-server command does not exist. Failing."
+                  echo "The code command does not exist. Failing."
                   exit 1
               fi
