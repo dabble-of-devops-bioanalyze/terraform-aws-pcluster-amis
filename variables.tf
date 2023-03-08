@@ -39,17 +39,18 @@ variable "os" {
 }
 
 variable "ami_owner" {
-  default = "247102896272"
+  #  default = "247102896272"
+  default = "898082745236"
 }
 
 #TODO change this to map of name/value
 variable "deep_learning_amis" {
   description = "List of DeepLearning AMIs to build additional pcluster images."
-  type        = list(string)
+  #  type        = list(string)
   default     = [
     "Deep Learning Base Neuron AMI (Ubuntu 20.04) 20221214",
-    "Deep Learning AMI GPU PyTorch 1.13.1 (Ubuntu 20.04) 20230222",
-    "aws-parallelcluster-3.3.1-ubuntu-2004*",
+    #"Deep Learning AMI GPU PyTorch 1.13.1 (Ubuntu 20.04) 20230222",
+    #"aws-parallelcluster-3.3.1-ubuntu-2004*",
     #    "Deep Learning AMI GPU PyTorch 1* (Ubuntu 20.04) *"
   ]
 }
