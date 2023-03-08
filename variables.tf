@@ -47,6 +47,8 @@ variable "deep_learning_amis" {
   description = "List of DeepLearning AMIs to build additional pcluster images."
   type        = list(string)
   default     = [
+    "Deep Learning Base Neuron AMI (Ubuntu 20.04) 20221214",
+    "Deep Learning AMI GPU PyTorch 1.13.1 (Ubuntu 20.04) 20230222",
     "aws-parallelcluster-3.3.1-ubuntu-2004*",
     #    "Deep Learning AMI GPU PyTorch 1* (Ubuntu 20.04) *"
   ]
@@ -63,7 +65,9 @@ variable "deep_learning_amis_alinux2" {
 variable "deep_learning_amis_ubuntu2004" {
   description = "List of ubuntu DeepLearning AMIs to build additional pcluster images."
   default     = [
-    "Deep Learning AMI GPU PyTorch 1* (Ubuntu 20.04) *"
+    #    "Deep Learning AMI GPU PyTorch 1* (Ubuntu 20.04) *",
+    "Deep Learning Base Neuron AMI (Ubuntu 20.04) 20221214",
+    "Deep Learning AMI GPU PyTorch 1.13.1 (Ubuntu 20.04) 20230222",
   ]
 }
 
