@@ -92,11 +92,11 @@ locals {
       filename : "${path.module}/files/image-builder/${var.os}/docker-component.yaml",
     },
     # I think it should install nvidia if we have a compatible gpu instance
-    #    {
-    #      name : "nvidia",
-    #      version : local.dt_version,
-    #      filename : "${path.module}/files/image-builder/${var.os}/nvidia-component.yaml",
-    #    },
+    {
+      name : "nvidia",
+      version : local.dt_version,
+      filename : "${path.module}/files/image-builder/${var.os}/nvidia-component.yaml",
+    },
     {
       name : "vscode",
       version : local.dt_version,
