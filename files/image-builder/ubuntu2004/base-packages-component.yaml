@@ -117,6 +117,23 @@ phases:
               apt install -y nodejs || echo "Unable to install nodejs"
               npm install -g configurable-http-proxy
 
+              export TASK="Qt6"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              add-apt-repository -y ppa:okirby/qt6-backports
+              apt update -y
+              apt install -y qt6-base-dev
+
+              export TASK="Qt5"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              apt-get install -y \
+                pyqt5-dev \
+                pyqt5-dev-tools \
+                libqt5x11extras5-dev
+
   - name: validate
     steps:
       - name: ValidateLmod
