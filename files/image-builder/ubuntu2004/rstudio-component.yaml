@@ -81,7 +81,7 @@ phases:
               apt install -y ./rstudio-2022.12.0-353-amd64.deb
 
               ################################################
-              # Install Shiny Server
+              # Install RStudio Server
               ################################################
 
               FILE="rstudio-server-2022.12.0-353-amd64.deb"
@@ -95,6 +95,7 @@ phases:
 
               sudo systemctl daemon-reload
               sudo rstudio-server stop || echo "Unable to stop rstudio server"
+
               ################################################
               # Install Shiny Server
               ################################################
