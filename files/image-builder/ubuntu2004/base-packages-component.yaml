@@ -135,6 +135,9 @@ phases:
                 pyqt5-dev-tools \
                 libqt5x11extras5-dev
 
+              apt-get install -y libgssapi-krb5-2
+
+
   - name: validate
     steps:
       - name: ValidateLmod
