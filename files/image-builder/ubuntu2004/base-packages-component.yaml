@@ -91,6 +91,7 @@ phases:
               apt install -y aria2
               apt install -y --no-install-recommends software-properties-common dirmngr
               npm install -g configurable-http-proxy vtop
+              apt-get install -y texlive pandoc
 
               ################################################
               # Install YQ
