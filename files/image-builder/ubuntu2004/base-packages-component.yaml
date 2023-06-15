@@ -103,6 +103,13 @@ phases:
                 wget -qO /usr/bin/yq https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64
               fi
 
+              export TASK="MySQL"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                mariadb-server
+
               export TASK="Nodejs"
               echo "===================================================="
               echo "# Starting: ${TASK}"

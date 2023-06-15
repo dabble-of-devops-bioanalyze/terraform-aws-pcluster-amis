@@ -74,6 +74,13 @@ phases:
                 sudo \
                 lsb-release
 
+              export TASK="Desktop: vncserver"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                  tightvncserver
+
               export TASK="Desktop: Mate"
               echo "===================================================="
               echo "# Starting: ${TASK}"
@@ -86,7 +93,7 @@ phases:
               echo "# Starting: ${TASK}"
               echo "===================================================="
               env DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                xfce4
+                xfce4 xfce4-goodies
 
               export TASK="Desktop: Gnome Ubuntu"
               echo "===================================================="
