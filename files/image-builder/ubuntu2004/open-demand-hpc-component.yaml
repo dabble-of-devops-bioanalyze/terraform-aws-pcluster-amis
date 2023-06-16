@@ -53,6 +53,16 @@ phases:
               echo "# Starting: ${TASK}"
               echo "===================================================="
 
+              export TASK="Desktop: vncserver"
+              echo "===================================================="
+              echo "# Starting: ${TASK}"
+              echo "===================================================="
+              env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                  tightvncserver
+
+              ###########################################
+              # installs to /opt/TurboVNC/bin/
+              ###########################################
               FILE="turbovnc_3.0.2_amd64.deb"
               if [ -f "$FILE" ]; then
                 echo "$FILE exists."
@@ -61,13 +71,12 @@ phases:
               fi
 
               apt install -y ./turbovnc_3.0.2_amd64.deb
-              # installs to /opt/TurboVNC/bin/
 
               FILE="virtualgl_3.0.2_amd64.deb"
               if [ -f "$FILE" ]; then
-                echo "$FILE exists."
+              echo "$FILE exists."
               else
-                wget https://sourceforge.net/projects/virtualgl/files/3.0.2/virtualgl_3.0.2_amd64.deb/download -O virtualgl_3.0.2_amd64.deb
+              wget https://sourceforge.net/projects/virtualgl/files/3.0.2/virtualgl_3.0.2_amd64.deb/download -O virtualgl_3.0.2_amd64.deb
               fi
               apt install -y ./virtualgl_3.0.2_amd64.deb
 
