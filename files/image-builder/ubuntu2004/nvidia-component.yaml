@@ -64,10 +64,11 @@ phases:
               sudo dpkg -i cuda-repo-ubuntu2004-11-7-local_11.7.0-515.43.04-1_amd64.deb
               sudo cp /var/cuda-repo-ubuntu2004-11-7-local/cuda-*-keyring.gpg /usr/share/keyrings/
               sudo apt-get update
-              sudo apt-get -y install cuda nvidia-cuda-dev nvidia-cuda-toolkit
 
               # NVIDIA DRIVER 5.2.5
-              sudo apt-get install -y nvidia-driver-525
+              # sudo apt-get install -y nvidia-driver-525
+              sudo apt-get -y install cuda nvidia-driver-525 nvidia-cuda-dev nvidia-cuda-toolkit
+
 
   # this installs the latest version - 12
   #              wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb
